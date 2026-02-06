@@ -2,8 +2,7 @@
   "manifest_version": 3,
   "name": "GAIA Prompt Optimizer",
   "version": "1.0",
-  "description": "Prompt optimization & CO₂ tracking",
-  "permissions": ["storage", "activeTab"],
+  "permissions": ["storage", "activeTab","scripting"],
   "host_permissions": [
     "https://chat.openai.com/*",
     "https://gemini.google.com/*"
@@ -11,9 +10,7 @@
   "background": {
     "service_worker": "background.js"
   },
-  "action": {
-    "default_popup": "popup.html"
-  },
+  "action": {}, 
   "content_scripts": [
     {
       "matches": [
