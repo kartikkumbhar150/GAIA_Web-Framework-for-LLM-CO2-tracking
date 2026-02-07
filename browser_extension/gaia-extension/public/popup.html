@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GAIA Assistant</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 380px;
+      min-height: 500px;
+      max-height: 600px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(to bottom, #f9fafb, #ffffff);
+      overflow-y: auto;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .header {
+      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+      padding: 20px;
+      color: white;
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-icon {
+      width: 36px;
+      height: 36px;
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .header p {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .content {
+      padding: 16px;
+    }
+
+    .section {
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .category {
+      margin-bottom: 14px;
+    }
+
+    .category-header {
+      font-weight: 600;
+      font-size: 12px;
+      color: #374151;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .category-icon {
+      font-size: 14px;
+    }
+
+    .task-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .task-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1.5px solid #e5e7eb;
+      background: white;
+      font-size: 11px;
+      color: #374151;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .task-btn:hover {
+      border-color: #16a34a;
+      background: #f0fdf4;
+      color: #16a34a;
+    }
+
+    .task-btn.selected {
+      border-color: #16a34a;
+      background: #16a34a;
+      color: white;
+    }
+
+    .model-card {
+      background: white;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 10px;
+    }
+
+    .model-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .model-card-content {
+      display: flex;
+      align-items: start;
+      gap: 12px;
+    }
+
+    .model-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .model-info {
+      flex: 1;
+    }
+
+    .model-name {
+      font-weight: 600;
+      font-size: 13px;
+      color: #111827;
+      margin-bottom: 3px;
+    }
+
+    .model-description {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    .model-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .model-tag {
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .selected-task-display {
+      margin-top: 20px;
+      padding: 14px;
+      background: white;
+      border: 2px solid #16a34a;
+      border-radius: 10px;
+      display: none;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .selected-task-header {
+      font-weight: 600;
+      font-size: 13px;
+      color: #16a34a;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .selected-task-name {
+      font-size: 12px;
+      color: #374151;
+      margin-bottom: 10px;
+    }
+
+    .suggestions-container {
+      display: grid;
+      gap: 8px;
+    }
+
+    .suggestion-card {
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #f9fafb;
+      border: 1.5px solid #e5e7eb;
+      transition: all 0.2s;
+    }
+
+    .suggestion-card:hover {
+      border-color: #16a34a;
+      background: #f0fdf4;
+    }
+
+    .suggestion-type {
+      font-weight: 600;
+      font-size: 10px;
+      color: #16a34a;
+      background: #dcfce7;
+      padding: 2px 6px;
+      border-radius: 3px;
+      display: inline-block;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .suggestion-text {
+      font-size: 12px;
+      color: #374151;
+      line-height: 1.4;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 12px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #e5e7eb;
+      border-top-color: #16a34a;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 8px;
+    }
+
+    .loading-text {
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-content">
+      <svg class="header-icon" viewBox="0 0 24 24" fill="none">
+        <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" 
+              stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <h1>GAIA Assistant</h1>
+        <p>Your AI-powered prompt companion</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Task Selection Section -->
+    <div class="section">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" 
+                stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Select Your Task
+      </div>
+      
+      <div id="task-categories"></div>
+    </div>
+
+    <!-- Model Recommendations Section -->
+    <div class="section">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M13 10V3L4 14h7v7l9-11h-7z" 
+                stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Recommended Models
+      </div>
+      
+      <div id="model-recommendations"></div>
+    </div>
+
+    <!-- Selected Task Display -->
+    <div id="selected-task-display" class="selected-task-display">
+      <div class="selected-task-header">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" 
+                stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Task Selected
+      </div>
+      <div id="selected-task-name" class="selected-task-name"></div>
+      <div id="task-suggestions" class="suggestions-container"></div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/content/popup.ts"></script>
+</body>
+</html>

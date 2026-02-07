@@ -1,0 +1,145 @@
+/* GAIA Extension - Content Script Styles */
+/* All styles are scoped to avoid conflicts with page styles */
+
+/* Keyframe animations - prefixed with gaia- to avoid conflicts */
+@keyframes gaia-pulse {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.4), 0 0 0 0 rgba(22, 163, 74, 0.4);
+  }
+  50% {
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.4), 0 0 0 6px rgba(22, 163, 74, 0);
+  }
+}
+
+@keyframes gaia-slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gaia-slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gaia-fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes gaia-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Base reset for GAIA elements */
+[class^="gaia-"],
+[id^="gaia-"] {
+  all: initial;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+/* GAIA Icon */
+#gaia-icon {
+  position: fixed !important;
+  z-index: 999999 !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  pointer-events: auto !important;
+}
+
+/* GAIA Popup */
+#gaia-popup {
+  position: fixed !important;
+  z-index: 999998 !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* Scrollbar styling for GAIA popup */
+#gaia-popup::-webkit-scrollbar {
+  width: 6px;
+}
+
+#gaia-popup::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+#gaia-popup::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+#gaia-popup::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Suggestion cards hover effect */
+.gaia-suggestion-card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.gaia-suggestion-card:hover {
+  transform: translateX(-2px) !important;
+}
+
+/* Utility class to mark GAIA elements for easy cleanup */
+.gaia-extension-element {
+  /* Marker class - no styles needed */
+}
+
+/* Ensure GAIA elements are always visible and not affected by page styles */
+#gaia-icon,
+#gaia-popup,
+.gaia-extension-element {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Mobile responsiveness (if needed) */
+@media (max-width: 768px) {
+  #gaia-popup {
+    width: 90vw !important;
+    max-width: 320px !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  #gaia-icon {
+    border: 2px solid currentColor !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  #gaia-icon,
+  #gaia-popup,
+  .gaia-suggestion-card {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+  /* Add dark mode styles if needed */
+}
