@@ -7,6 +7,14 @@ let gaiaIcon: HTMLDivElement | null = null;
 let gaiaPopup: HTMLDivElement | null = null;
 let extensionPanel: HTMLDivElement | null = null;
 
+function isLoggedIn(): Promise<boolean> {
+  return new Promise(resolve => {
+    chrome.runtime.sendMessage({ type: "GET_TOKEN" }, res => {
+      resolve(!!res.token);
+    });
+  });
+}
+
 // Detect if we're in the extension popup/panel
 function isExtensionPanel(): boolean {
   return window.location.href.includes('chrome-extension://') || 
@@ -728,7 +736,12 @@ function repositionPopup() {
 }
 
 // Initialize based on context
-function initialize() {
+async function initialize() {
+  const loggedIn = await isLoggedIn();
+  if (!loggedIn) {
+    console.log("User not logged in, GAIA will not initialize.");
+    return;
+  }
   if (isExtensionPanel()) {
     // Extension panel mode
     createExtensionPanel();

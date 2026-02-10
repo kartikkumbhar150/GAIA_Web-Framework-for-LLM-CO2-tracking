@@ -1,74 +1,48 @@
-// ===============================
-// GAIA Background Script
-// ===============================
+const API_BASE = "http://localhost:3000/api/auth/exbackend";
 
-// ---------- 1. TOKEN ESTIMATION ----------
-function estimateTokens(text: string): number {
-  return Math.ceil(text.length / 4);
-}
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
-// ---------- 2. HANDLE PROMPT UPDATES ----------
-chrome.runtime.onMessage.addListener(
-  (
-    msg: {
-      type: string;
-      text?: string;
-      platform?: string;
-      tokensBefore?: number;
-      tokensAfter?: number;
-    },
-    sender: chrome.runtime.MessageSender,
-    sendResponse
-  ) => {
-    if (msg.type === "PROMPT_UPDATE") {
-      const tokensBefore =
-        msg.tokensBefore ?? estimateTokens(msg.text || "");
+  if (msg.type === "GET_TOKEN") {
+    chrome.storage.local.get(["jwt"], (res) => {
+      sendResponse({ token: res.jwt || null });
+    });
+    return true; // async
+  }
 
-      chrome.storage.local.set({
-        tokensBefore,
-        tokensAfter: msg.tokensAfter,
-        platform: msg.platform
+  if (msg.type === "LOGIN") {
+    fetch(API_BASE, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(msg.payload),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok || !data.token) {
+          throw new Error("Login failed");
+        }
+        return data;
+      })
+      .then((data) => {
+        //  Store JWT
+        chrome.storage.local.set({ jwt: data.token }, () => {
+          sendResponse({ success: true });
+        });
+      })
+      .catch((err) => {
+        console.error("LOGIN ERROR:", err);
+        sendResponse({ success: false });
       });
 
-      // (optional) console log for debugging
-      console.log("GAIA metrics stored:", {
-        tokensBefore,
-        tokensAfter: msg.tokensAfter,
-        platform: msg.platform
-      });
-    }
+    return true; // IMPORTANT: async response
+  }
 
+
+  if (msg.type === "LOGOUT") {
+    chrome.storage.local.remove("jwt", () => {
+      sendResponse({ success: true });
+    });
     return true;
-  }
-);
-
-// ---------- 3. EXTENSION ICON CLICK → TOGGLE PANEL ----------
-chrome.action.onClicked.addListener(async (tab) => {
-  if (!tab.id || !tab.url) return;
-
-  // Sirf ChatGPT / Gemini pe allow
-  if (
-    !tab.url.includes("chat.openai.com") &&
-    !tab.url.includes("gemini.google.com")
-  ) {
-    return;
-  }
-
-  try {
-    // Try sending message
-    await chrome.tabs.sendMessage(tab.id, {
-      type: "TOGGLE_GAIA_PANEL"
-    });
-  } catch (err) {
-    // Content script not injected → inject it
-    await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      files: ["content.js"]
-    });
-
-    // Retry message
-    await chrome.tabs.sendMessage(tab.id, {
-      type: "TOGGLE_GAIA_PANEL"
-    });
   }
 });

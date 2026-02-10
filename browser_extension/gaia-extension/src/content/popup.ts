@@ -1,6 +1,56 @@
 import { MODEL_RECOMMENDATIONS, TASK_CATEGORIES } from './constants';
 import type { PromptSuggestion, StorageData } from './types';
 
+function checkAuth(): Promise<boolean> {
+  return new Promise(resolve => {
+    chrome.runtime.sendMessage({ type: "GET_TOKEN" }, res => {
+      resolve(!!res?.token);
+    });
+  });
+}
+function renderLoginUI() {
+  document.body.innerHTML = `
+    <div style="
+      padding: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
+    ">
+      <h2 style="margin-bottom: 16px;">Login to GAIA</h2>
+
+      <input id="email" placeholder="Email"
+        style="width:100%; padding:8px; margin-bottom:10px"/>
+
+      <input id="password" type="password" placeholder="Password"
+        style="width:100%; padding:8px; margin-bottom:12px"/>
+
+      <button id="login"
+        style="
+          width:100%;
+          padding:10px;
+          background:#16a34a;
+          color:white;
+          border:none;
+          border-radius:6px;
+          cursor:pointer;
+        ">
+        Login
+      </button>
+    </div>
+  `;
+
+  document.getElementById("login")!.onclick = () => {
+    chrome.runtime.sendMessage({
+      type: "LOGIN",
+      payload: {
+        email: (document.getElementById("email") as HTMLInputElement).value,
+        password: (document.getElementById("password") as HTMLInputElement).value,
+      }
+    }, res => {
+      if (res.success) location.reload();
+      else alert("Invalid credentials");
+    });
+  };
+}
+
 class PopupController {
   private selectedTaskDisplay: HTMLElement | null = null;
   private selectedTaskName: HTMLElement | null = null;
@@ -234,6 +284,14 @@ class PopupController {
 }
 
 // Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  new PopupController();
+document.addEventListener('DOMContentLoaded', async () => {
+  const loggedIn = await checkAuth();
+
+  if (!loggedIn) {
+    renderLoginUI();   //  login screen
+    return;
+  }
+
+  new PopupController(); //  existing GAIA UI
 });
+
