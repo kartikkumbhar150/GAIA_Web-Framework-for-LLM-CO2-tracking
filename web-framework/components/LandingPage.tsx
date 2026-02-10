@@ -13,13 +13,13 @@ export function LandingPage() {
           </div>
           <div className="flex items-center gap-3">
             <Link 
-              href="/auth/login"
+              href="/login"
               className="px-5 py-2 text-gray-700 hover:text-gray-900 transition-colors"
             >
               Login
             </Link>
             <Link 
-              href="/auth/signup"
+              href="/signup"
               className="px-5 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all shadow-sm hover:shadow"
             >
               Sign Up
@@ -45,7 +45,7 @@ export function LandingPage() {
 
             <div className="flex items-center gap-4 pt-4">
               <Link 
-                href="/auth/signup"
+                href="/signup"
                 className="px-8 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all shadow-md hover:shadow-lg text-lg font-medium"
               >
                 Get Started

@@ -1,6 +1,7 @@
 "use client";
-import { Leaf, LayoutDashboard, FileText, Settings, TrendingUp, Zap, TrendingDown, Target } from 'lucide-react';
+import { Leaf, LayoutDashboard, FileText, Settings, TrendingUp, Zap, TrendingDown, Target, LogOut } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { useRouter } from 'next/navigation';
 
 // Mock data for charts
 const emissionsData = [
@@ -28,6 +29,22 @@ const tableData = [
 ];
 
 export default function Dashboard() {
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    try {
+      // Clear the token cookie
+      await fetch('/api/auth/signout', {
+        method: 'POST',
+      });
+      
+      // Redirect to login
+      router.push('/login');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Sidebar */}
@@ -65,9 +82,9 @@ export default function Dashboard() {
           </a>
         </nav>
 
-        {/* User Info */}
+        {/* User Info with Sign Out */}
         <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mb-3">
             <div className="size-10 bg-emerald-100 rounded-full flex items-center justify-center">
               <span className="text-emerald-700 font-medium">JD</span>
             </div>
@@ -76,6 +93,13 @@ export default function Dashboard() {
               <p className="text-xs text-gray-500 truncate">john@company.com</p>
             </div>
           </div>
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            <LogOut className="size-4" />
+            <span>Sign Out</span>
+          </button>
         </div>
       </aside>
 
