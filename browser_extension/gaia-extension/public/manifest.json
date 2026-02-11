@@ -11,6 +11,7 @@
   ],
   
   "host_permissions": [
+    "http://localhost:3001/*",
     "https://chatgpt.com/*",
     "https://chat.openai.com/*",
     "https://gemini.google.com/*",

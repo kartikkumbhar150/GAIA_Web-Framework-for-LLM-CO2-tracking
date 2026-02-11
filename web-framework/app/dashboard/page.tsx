@@ -1,7 +1,11 @@
 "use client";
-import { Leaf, LayoutDashboard, FileText, Settings, TrendingUp, Zap, TrendingDown, Target, LogOut } from 'lucide-react';
+import { Leaf, LayoutDashboard, FileText, Settings, TrendingUp, Zap, TrendingDown, Target, LogOut, Sparkles } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+
+
+
 
 // Mock data for charts
 const emissionsData = [
@@ -30,7 +34,21 @@ const tableData = [
 
 export default function Dashboard() {
   const router = useRouter();
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
 
+useEffect(() => {
+  const fetchUser = async () => {
+    try {
+      const res = await fetch("/api/dashboard");
+      const data = await res.json();
+      setUser(data);
+    } catch (err) {
+      console.error("Failed to fetch user:", err);
+    }
+  };
+
+  fetchUser();
+}, []);
   const handleSignOut = async () => {
     try {
       // Clear the token cookie
@@ -60,7 +78,7 @@ export default function Dashboard() {
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1">
           <a 
-            href="#" 
+            href="/dashboard" 
             className="flex items-center gap-3 px-4 py-3 bg-emerald-50 text-emerald-700 rounded-lg transition-all hover:bg-emerald-100"
           >
             <LayoutDashboard className="size-5" />
@@ -72,6 +90,13 @@ export default function Dashboard() {
           >
             <FileText className="size-5" />
             <span className="font-medium">Reports</span>
+          </a>
+          <a 
+            href="/suggestions" 
+            className="flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg transition-all hover:bg-gray-50 hover:text-gray-900"
+          >
+            <Sparkles className="size-5" />
+            <span className="font-medium">AI Suggestions</span>
           </a>
           <a 
             href="#" 
@@ -89,8 +114,8 @@ export default function Dashboard() {
               <span className="text-emerald-700 font-medium">JD</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">John Doe</p>
-              <p className="text-xs text-gray-500 truncate">john@company.com</p>
+              <p className="text-sm font-medium text-gray-900 truncate">{user?.name || "Loading..."}</p>
+              <p className="text-xs text-gray-500 truncate">{user?.email || ""}</p>
             </div>
           </div>
           <button

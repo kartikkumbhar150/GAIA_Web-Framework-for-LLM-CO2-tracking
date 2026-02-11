@@ -4,51 +4,268 @@ import type { PromptSuggestion, StorageData } from './types';
 function checkAuth(): Promise<boolean> {
   return new Promise(resolve => {
     chrome.runtime.sendMessage({ type: "GET_TOKEN" }, res => {
+      if (chrome.runtime.lastError) {
+        console.error("❌ Auth check error:", chrome.runtime.lastError);
+        resolve(false);
+        return;
+      }
       resolve(!!res?.token);
     });
   });
 }
-function renderLoginUI() {
+
+function renderAuthUI() {
   document.body.innerHTML = `
     <div style="
       padding: 24px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(to bottom, #f9fafb, #ffffff);
+      min-height: 500px;
     ">
-      <h2 style="margin-bottom: 16px;">Login to GAIA</h2>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div style="
+          width: 64px;
+          height: 64px;
+          margin: 0 auto 16px;
+          border-radius: 16px;
+          background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 32px;
+          font-weight: 800;
+          color: white;
+        ">G</div>
+        <h2 style="
+          margin: 0 0 8px 0;
+          font-size: 24px;
+          font-weight: 700;
+          color: #111827;
+        ">Welcome to GAIA</h2>
+        <p style="
+          margin: 0;
+          font-size: 14px;
+          color: #6b7280;
+        ">Your AI-powered prompt companion</p>
+      </div>
 
-      <input id="email" placeholder="Email"
-        style="width:100%; padding:8px; margin-bottom:10px"/>
+      <div id="auth-tabs" style="
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+        background: #f3f4f6;
+        padding: 4px;
+        border-radius: 8px;
+      ">
+        <button id="login-tab" class="auth-tab active" style="
+          flex: 1;
+          padding: 10px;
+          border: none;
+          background: white;
+          color: #16a34a;
+          font-weight: 600;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.2s;
+        ">Login</button>
+        <button id="register-tab" class="auth-tab" style="
+          flex: 1;
+          padding: 10px;
+          border: none;
+          background: transparent;
+          color: #6b7280;
+          font-weight: 600;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.2s;
+        ">Register</button>
+      </div>
 
-      <input id="password" type="password" placeholder="Password"
-        style="width:100%; padding:8px; margin-bottom:12px"/>
+      <div id="auth-form">
+        <div style="margin-bottom: 16px;">
+          <label style="
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+          ">Email</label>
+          <input id="email" type="email" placeholder="you@example.com" style="
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+            box-sizing: border-box;
+          "/>
+        </div>
 
-      <button id="login"
-        style="
-          width:100%;
-          padding:10px;
-          background:#16a34a;
-          color:white;
-          border:none;
-          border-radius:6px;
-          cursor:pointer;
-        ">
-        Login
-      </button>
+        <div style="margin-bottom: 20px;">
+          <label style="
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+          ">Password</label>
+          <input id="password" type="password" placeholder="••••••••" style="
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+            box-sizing: border-box;
+          "/>
+        </div>
+
+        <div id="error-message" style="
+          display: none;
+          padding: 12px;
+          margin-bottom: 16px;
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          border-radius: 8px;
+          color: #dc2626;
+          font-size: 13px;
+        "></div>
+
+        <button id="submit-btn" style="
+          width: 100%;
+          padding: 12px;
+          background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        ">Login</button>
+      </div>
     </div>
+
+    <style>
+      #email:focus, #password:focus {
+        outline: none;
+        border-color: #16a34a;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+      }
+      
+      #submit-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+      }
+      
+      #submit-btn:active {
+        transform: translateY(0);
+      }
+      
+      #submit-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .auth-tab:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      .auth-tab.active {
+        background: white;
+        color: #16a34a;
+      }
+    </style>
   `;
 
-  document.getElementById("login")!.onclick = () => {
+  let isLoginMode = true;
+
+  const loginTab = document.getElementById("login-tab")!;
+  const registerTab = document.getElementById("register-tab")!;
+  const submitBtn = document.querySelector<HTMLButtonElement>("#submit-btn")!;
+  const errorMessage = document.getElementById("error-message")!;
+
+  const switchMode = (toLogin: boolean) => {
+    isLoginMode = toLogin;
+    
+    if (toLogin) {
+      loginTab.classList.add("active");
+      registerTab.classList.remove("active");
+      submitBtn.textContent = "Login";
+    } else {
+      loginTab.classList.remove("active");
+      registerTab.classList.add("active");
+      submitBtn.textContent = "Register";
+    }
+    
+    errorMessage.style.display = "none";
+  };
+
+  loginTab.onclick = () => switchMode(true);
+  registerTab.onclick = () => switchMode(false);
+
+  const handleSubmit = () => {
+    const email = (document.getElementById("email") as HTMLInputElement).value.trim();
+    const password = (document.getElementById("password") as HTMLInputElement).value;
+
+    // Validate input
+    if (!email || !password) {
+      errorMessage.textContent = "Please enter both email and password";
+      errorMessage.style.display = "block";
+      return;
+    }
+
+    if (password.length < 6) {
+      errorMessage.textContent = "Password must be at least 6 characters";
+      errorMessage.style.display = "block";
+      return;
+    }
+
+    // Disable button and show loading
+    submitBtn.disabled = true;
+    submitBtn.textContent = isLoginMode ? "Logging in..." : "Registering...";
+    errorMessage.style.display = "none";
+
+    const messageType = isLoginMode ? "LOGIN" : "REGISTER";
+
     chrome.runtime.sendMessage({
-      type: "LOGIN",
-      payload: {
-        email: (document.getElementById("email") as HTMLInputElement).value,
-        password: (document.getElementById("password") as HTMLInputElement).value,
-      }
+      type: messageType,
+      payload: { email, password }
     }, res => {
-      if (res.success) location.reload();
-      else alert("Invalid credentials");
+      if (chrome.runtime.lastError) {
+        console.error("❌ Runtime error:", chrome.runtime.lastError);
+        errorMessage.textContent = "Communication error. Please try again.";
+        errorMessage.style.display = "block";
+        submitBtn.disabled = false;
+        submitBtn.textContent = isLoginMode ? "Login" : "Register";
+        return;
+      }
+
+      if (res?.success) {
+        console.log("✅ Authentication successful");
+        location.reload();
+      } else {
+        console.error("❌ Authentication failed:", res?.error);
+        errorMessage.textContent = res?.error || "Authentication failed. Please try again.";
+        errorMessage.style.display = "block";
+        submitBtn.disabled = false;
+        submitBtn.textContent = isLoginMode ? "Login" : "Register";
+      }
     });
   };
+
+  submitBtn.onclick = handleSubmit;
+
+  // Allow Enter key to submit
+  document.getElementById("email")!.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") handleSubmit();
+  });
+  document.getElementById("password")!.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") handleSubmit();
+  });
 }
 
 class PopupController {
@@ -285,13 +502,16 @@ class PopupController {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
+  console.log("🚀 Popup initializing...");
+  
   const loggedIn = await checkAuth();
 
   if (!loggedIn) {
-    renderLoginUI();   //  login screen
+    console.log("⚠️ Not authenticated - showing auth UI");
+    renderAuthUI();
     return;
   }
 
-  new PopupController(); //  existing GAIA UI
+  console.log("✅ Authenticated - showing main UI");
+  new PopupController();
 });
-
