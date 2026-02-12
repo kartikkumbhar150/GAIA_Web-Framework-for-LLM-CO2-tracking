@@ -12,6 +12,7 @@
   
   "host_permissions": [
     "http://localhost:3001/*",
+    "https://chat.deepseek.com/",
     "https://chatgpt.com/*",
     "https://chat.openai.com/*",
     "https://gemini.google.com/*",
@@ -59,7 +60,8 @@
         "https://claude.ai/*",
         "https://www.perplexity.ai/*",
         "https://you.com/*",
-        "https://www.phind.com/*"
+        "https://www.phind.com/*",
+        "https://chat.deepseek.com/"
       ],
       "js": ["content.js"],
       "css": ["content.css"],
@@ -74,6 +76,8 @@
         "icons/*.svg"
       ],
       "matches": [
+
+        "https://chat.deepseek.com/",
         "https://chatgpt.com/*",
         "https://chat.openai.com/*",
         "https://gemini.google.com/*",

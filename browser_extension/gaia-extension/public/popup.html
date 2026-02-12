@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GAIA Assistant</title>
+  <title>GAIA - AI Model Recommendation Engine</title>
   <style>
     * {
       margin: 0;
@@ -11,16 +11,39 @@
       box-sizing: border-box;
     }
 
-    body {
-      width: 380px;
-      min-height: 500px;
-      max-height: 600px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(to bottom, #f9fafb, #ffffff);
-      overflow-y: auto;
+    :root {
+      --primary: #10a37f;
+      --primary-dark: #0d8768;
+      --secondary: #7c3aed;
+      --accent: #f59e0b;
+      --success: #16a34a;
+      --error: #dc2626;
+      --bg-primary: #ffffff;
+      --bg-secondary: #f9fafb;
+      --bg-tertiary: #f3f4f6;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --text-tertiary: #9ca3af;
+      --border: #e5e7eb;
+      --border-focus: #10a37f;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
     }
 
-    @keyframes slideDown {
+    body {
+      width: 420px;
+      min-height: 600px;
+      max-height: 700px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+      overflow-y: auto;
+      color: var(--text-primary);
+    }
+
+    /* ========== ANIMATIONS ========== */
+    @keyframes slideIn {
       from {
         opacity: 0;
         transform: translateY(-10px);
@@ -31,14 +54,34 @@
       }
     }
 
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
 
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
+    }
+
+    /* ========== HEADER ========== */
     .header {
-      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+      background: linear-gradient(135deg, #10a37f 0%, #0d8768 100%);
       padding: 20px;
       color: white;
+      box-shadow: var(--shadow-md);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
     .header-content {
@@ -48,33 +91,147 @@
     }
 
     .header-icon {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
     }
 
-    .header h1 {
+    .header-text h1 {
       font-size: 18px;
       font-weight: 700;
       margin-bottom: 2px;
     }
 
-    .header p {
-      font-size: 12px;
+    .header-text p {
+      font-size: 11px;
       opacity: 0.9;
     }
 
+    /* ========== TABS ========== */
+    .tabs {
+      display: flex;
+      background: var(--bg-primary);
+      border-bottom: 2px solid var(--border);
+      position: sticky;
+      top: 80px;
+      z-index: 99;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+    }
+
+    .tab:hover {
+      color: var(--text-primary);
+      background: var(--bg-secondary);
+    }
+
+    .tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: var(--bg-secondary);
+    }
+
+    /* ========== CONTENT ========== */
     .content {
       padding: 16px;
     }
 
-    .section {
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* ========== SEARCH BAR ========== */
+    .search-container {
       margin-bottom: 20px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 40px 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      transition: all 0.2s;
+      background: var(--bg-primary);
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-tertiary);
+      font-size: 16px;
+    }
+
+    /* ========== FILTER CHIPS ========== */
+    .filter-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .chip {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: var(--bg-primary);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-secondary);
+    }
+
+    .chip:hover {
+      border-color: var(--primary);
+      background: rgba(16, 163, 127, 0.05);
+    }
+
+    .chip.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    /* ========== SECTION ========== */
+    .section {
+      margin-bottom: 24px;
     }
 
     .section-title {
       font-size: 14px;
-      font-weight: 600;
-      color: #111827;
+      font-weight: 700;
+      color: var(--text-primary);
       margin-bottom: 12px;
       display: flex;
       align-items: center;
@@ -82,77 +239,101 @@
     }
 
     .section-title svg {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
+      color: var(--primary);
     }
 
-    .category {
-      margin-bottom: 14px;
-    }
-
-    .category-header {
-      font-weight: 600;
-      font-size: 12px;
-      color: #374151;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .category-icon {
-      font-size: 14px;
-    }
-
-    .task-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .task-btn {
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: 1.5px solid #e5e7eb;
-      background: white;
+    .section-subtitle {
       font-size: 11px;
-      color: #374151;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    /* ========== TASK GRID ========== */
+    .task-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .task-card {
+      padding: 14px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: var(--bg-primary);
       cursor: pointer;
       transition: all 0.2s;
-      font-weight: 500;
+      text-align: center;
     }
 
-    .task-btn:hover {
-      border-color: #16a34a;
-      background: #f0fdf4;
-      color: #16a34a;
+    .task-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--primary);
     }
 
-    .task-btn.selected {
-      border-color: #16a34a;
-      background: #16a34a;
-      color: white;
+    .task-card.selected {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, rgba(16, 163, 127, 0.05), rgba(16, 163, 127, 0.1));
+      box-shadow: var(--shadow-md);
+    }
+
+    .task-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .task-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* ========== MODEL CARDS ========== */
+    .model-grid {
+      display: grid;
+      gap: 12px;
     }
 
     .model-card {
-      background: white;
-      border: 1.5px solid #e5e7eb;
-      border-radius: 10px;
-      padding: 12px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      background: var(--bg-primary);
       cursor: pointer;
       transition: all 0.2s;
-      margin-bottom: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .model-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--model-color, var(--primary));
+      opacity: 0;
+      transition: opacity 0.2s;
     }
 
     .model-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transform: translateX(4px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--model-color, var(--primary));
     }
 
-    .model-card-content {
+    .model-card:hover::before {
+      opacity: 1;
+    }
+
+    .model-header {
       display: flex;
       align-items: start;
       gap: 12px;
+      margin-bottom: 10px;
     }
 
     .model-icon {
@@ -164,23 +345,81 @@
       justify-content: center;
       font-size: 18px;
       flex-shrink: 0;
+      background: var(--icon-bg, rgba(16, 163, 127, 0.1));
     }
 
     .model-info {
       flex: 1;
+      min-width: 0;
+    }
+
+    .model-name-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
     }
 
     .model-name {
-      font-weight: 600;
+      font-weight: 700;
       font-size: 13px;
-      color: #111827;
-      margin-bottom: 3px;
+      color: var(--text-primary);
+    }
+
+    .model-tier {
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .tier-flagship {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: white;
+    }
+
+    .tier-premium {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      color: white;
+    }
+
+    .tier-value {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+
+    .tier-efficient {
+      background: linear-gradient(135deg, #06b6d4, #0891b2);
+      color: white;
+    }
+
+    .tier-specialized {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white;
+    }
+
+    .tier-open-source {
+      background: linear-gradient(135deg, #ec4899, #db2777);
+      color: white;
+    }
+
+    .tier-enterprise {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white;
+    }
+
+    .model-platform {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-bottom: 6px;
     }
 
     .model-description {
-      font-size: 11px;
-      color: #6b7280;
-      margin-bottom: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
       line-height: 1.4;
     }
 
@@ -188,173 +427,493 @@
       display: flex;
       flex-wrap: wrap;
       gap: 4px;
-    }
-
-    .model-tag {
-      font-size: 9px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 600;
-    }
-
-    .selected-task-display {
-      margin-top: 20px;
-      padding: 14px;
-      background: white;
-      border: 2px solid #16a34a;
-      border-radius: 10px;
-      display: none;
-      animation: slideDown 0.3s ease-out;
-    }
-
-    .selected-task-header {
-      font-weight: 600;
-      font-size: 13px;
-      color: #16a34a;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .selected-task-name {
-      font-size: 12px;
-      color: #374151;
       margin-bottom: 10px;
     }
 
-    .suggestions-container {
-      display: grid;
-      gap: 8px;
+    .model-tag {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      background: var(--tag-bg, rgba(16, 163, 127, 0.1));
+      color: var(--tag-color, var(--primary));
     }
 
-    .suggestion-card {
-      padding: 10px;
-      border-radius: 8px;
+    .model-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .model-pricing {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .model-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .action-btn {
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 10px;
+      font-weight: 600;
       cursor: pointer;
-      background: #f9fafb;
-      border: 1.5px solid #e5e7eb;
       transition: all 0.2s;
     }
 
-    .suggestion-card:hover {
-      border-color: #16a34a;
-      background: #f0fdf4;
+    .action-btn-primary {
+      background: var(--primary);
+      color: white;
     }
 
-    .suggestion-type {
-      font-weight: 600;
-      font-size: 10px;
-      color: #16a34a;
-      background: #dcfce7;
-      padding: 2px 6px;
+    .action-btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .action-btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .action-btn-secondary:hover {
+      background: var(--border);
+    }
+
+    /* ========== COMPARISON VIEW ========== */
+    .comparison-container {
+      margin-top: 16px;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .comparison-card {
+      padding: 12px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: var(--bg-primary);
+    }
+
+    .comparison-card-selected {
+      border-color: var(--primary);
+      background: rgba(16, 163, 127, 0.05);
+    }
+
+    .metric-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .metric-bar {
+      flex: 1;
+      height: 6px;
+      background: var(--bg-tertiary);
       border-radius: 3px;
-      display: inline-block;
+      margin: 0 8px;
+      overflow: hidden;
+    }
+
+    .metric-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+
+    .metric-value {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* ========== RECOMMENDATIONS ========== */
+    .recommendation-card {
+      padding: 16px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(16, 163, 127, 0.05), rgba(16, 163, 127, 0.1));
+      border: 2px solid var(--primary);
+      margin-bottom: 16px;
+    }
+
+    .recommendation-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .recommendation-icon {
+      font-size: 20px;
+    }
+
+    .recommendation-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .recommendation-subtitle {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .reason-list {
+      margin-bottom: 12px;
+    }
+
+    .reason-item {
+      display: flex;
+      align-items: start;
+      gap: 8px;
       margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
+      font-size: 11px;
+      color: var(--text-secondary);
     }
 
-    .suggestion-text {
-      font-size: 12px;
-      color: #374151;
-      line-height: 1.4;
+    .reason-icon {
+      color: var(--success);
+      margin-top: 2px;
     }
 
+    /* ========== LOADING STATES ========== */
     .loading {
       text-align: center;
-      padding: 12px;
+      padding: 24px;
     }
 
     .spinner {
       display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 2px solid #e5e7eb;
-      border-top-color: #16a34a;
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
     }
 
     .loading-text {
-      font-size: 11px;
-      color: #6b7280;
+      font-size: 12px;
+      color: var(--text-secondary);
+      animation: pulse 1.5s ease-in-out infinite;
     }
 
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+      border-radius: 8px;
+    }
+
+    .skeleton-card {
+      height: 120px;
+      margin-bottom: 12px;
+    }
+
+    /* ========== EMPTY STATES ========== */
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      opacity: 0.3;
+    }
+
+    .empty-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .empty-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* ========== BADGES ========== */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-new {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+
+    .badge-popular {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+    }
+
+    .badge-recommended {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      color: white;
+    }
+
+    /* ========== SCROLLBAR ========== */
     ::-webkit-scrollbar {
       width: 6px;
     }
 
     ::-webkit-scrollbar-track {
-      background: #f1f1f1;
+      background: var(--bg-tertiary);
     }
 
     ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
+      background: var(--border);
       border-radius: 3px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
+      background: var(--text-tertiary);
+    }
+
+    /* ========== TOOLTIPS ========== */
+    .tooltip {
+      position: relative;
+      cursor: help;
+    }
+
+    .tooltip::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 10px;
+      background: var(--text-primary);
+      color: white;
+      font-size: 11px;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      margin-bottom: 4px;
+    }
+
+    .tooltip:hover::after {
+      opacity: 1;
+    }
+
+    /* ========== PREFERENCES PANEL ========== */
+    .preferences-grid {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .preference-group {
+      padding: 12px;
+      border-radius: 10px;
+      background: var(--bg-primary);
+      border: 1.5px solid var(--border);
+    }
+
+    .preference-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .preference-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+
+    .preference-option {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1.5px solid var(--border);
+      background: var(--bg-secondary);
+      font-size: 11px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .preference-option:hover {
+      border-color: var(--primary);
+    }
+
+    .preference-option.selected {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+      font-weight: 600;
     }
   </style>
 </head>
 <body>
+  <!-- Header -->
   <div class="header">
     <div class="header-content">
-      <svg class="header-icon" viewBox="0 0 24 24" fill="none">
-        <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" 
-              stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <div>
-        <h1>GAIA Assistant</h1>
-        <p>Your AI-powered prompt companion</p>
+      <div class="header-icon">🤖</div>
+      <div class="header-text">
+        <h1>GAIA AI Recommender</h1>
+        <p>Find the perfect AI model for any task</p>
       </div>
     </div>
   </div>
 
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="discover">🔍 Discover</button>
+    <button class="tab" data-tab="compare">⚖️ Compare</button>
+    <button class="tab" data-tab="preferences">⚙️ Settings</button>
+  </div>
+
+  <!-- Content -->
   <div class="content">
-    <!-- Task Selection Section -->
-    <div class="section">
-      <div class="section-title">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" 
-                stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Select Your Task
+    <!-- Discover Tab -->
+    <div class="tab-content active" id="discover-tab">
+      <!-- Search Bar -->
+      <div class="search-container">
+        <input 
+          type="text" 
+          class="search-input" 
+          id="search-input"
+          placeholder="What do you want to create? (e.g., blog post, logo, video...)"
+        />
+        <span class="search-icon">🔍</span>
       </div>
-      
-      <div id="task-categories"></div>
+
+      <!-- Filter Chips -->
+      <div class="filter-chips" id="filter-chips">
+        <div class="chip active" data-filter="all">All Models</div>
+        <div class="chip" data-filter="llm">💬 LLMs</div>
+        <div class="chip" data-filter="image">🖼️ Images</div>
+        <div class="chip" data-filter="video">🎬 Video</div>
+        <div class="chip" data-filter="audio">🎙️ Audio</div>
+      </div>
+
+      <!-- Quick Tasks -->
+      <div class="section">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+          Quick Start Tasks
+        </div>
+        <div class="section-subtitle">Choose your task to get instant recommendations</div>
+        <div class="task-grid" id="task-grid"></div>
+      </div>
+
+      <!-- Recommendations -->
+      <div id="recommendations-container"></div>
+
+      <!-- All Models -->
+      <div class="section">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          Browse All Models
+        </div>
+        <div class="model-grid" id="all-models-grid"></div>
+      </div>
     </div>
 
-    <!-- Model Recommendations Section -->
-    <div class="section">
-      <div class="section-title">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M13 10V3L4 14h7v7l9-11h-7z" 
-                stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Recommended Models
+    <!-- Compare Tab -->
+    <div class="tab-content" id="compare-tab">
+      <div class="section">
+        <div class="section-title">Model Comparison</div>
+        <div class="section-subtitle">Select models to compare side-by-side</div>
+        <div id="comparison-selector"></div>
+        <div class="comparison-container" id="comparison-results"></div>
       </div>
-      
-      <div id="model-recommendations"></div>
     </div>
 
-    <!-- Selected Task Display -->
-    <div id="selected-task-display" class="selected-task-display">
-      <div class="selected-task-header">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-          <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" 
-                stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Task Selected
+    <!-- Preferences Tab -->
+    <div class="tab-content" id="preferences-tab">
+      <div class="section">
+        <div class="section-title">Your Preferences</div>
+        <div class="section-subtitle">Customize recommendations based on your needs</div>
+        
+        <div class="preferences-grid">
+          <div class="preference-group">
+            <div class="preference-label">Priority</div>
+            <div class="preference-options">
+              <div class="preference-option selected" data-pref="priority" data-value="balanced">⚖️ Balanced</div>
+              <div class="preference-option" data-pref="priority" data-value="quality">⭐ Quality</div>
+              <div class="preference-option" data-pref="priority" data-value="speed">⚡ Speed</div>
+              <div class="preference-option" data-pref="priority" data-value="cost">💰 Cost</div>
+            </div>
+          </div>
+
+          <div class="preference-group">
+            <div class="preference-label">Budget</div>
+            <div class="preference-options">
+              <div class="preference-option selected" data-pref="budget" data-value="medium">💵 Medium</div>
+              <div class="preference-option" data-pref="budget" data-value="free">🆓 Free</div>
+              <div class="preference-option" data-pref="budget" data-value="low">💲 Low</div>
+              <div class="preference-option" data-pref="budget" data-value="high">💎 High</div>
+            </div>
+          </div>
+
+          <div class="preference-group">
+            <div class="preference-label">Expertise Level</div>
+            <div class="preference-options">
+              <div class="preference-option selected" data-pref="expertise" data-value="intermediate">📚 Intermediate</div>
+              <div class="preference-option" data-pref="expertise" data-value="beginner">🌱 Beginner</div>
+              <div class="preference-option" data-pref="expertise" data-value="expert">🎓 Expert</div>
+            </div>
+          </div>
+
+          <div class="preference-group">
+            <div class="preference-label">Use Case</div>
+            <div class="preference-options">
+              <div class="preference-option selected" data-pref="useCase" data-value="professional">💼 Professional</div>
+              <div class="preference-option" data-pref="useCase" data-value="personal">🏠 Personal</div>
+              <div class="preference-option" data-pref="useCase" data-value="enterprise">🏢 Enterprise</div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div id="selected-task-name" class="selected-task-name"></div>
-      <div id="task-suggestions" class="suggestions-container"></div>
+
+      <div class="section">
+        <div class="section-title">About GAIA</div>
+        <div class="section-subtitle">
+          Version 2.0 • Comprehensive AI model recommendations powered by real-time research
+        </div>
+      </div>
     </div>
   </div>
 
-  <script type="module" src="/src/content/popup.js"></script>
+  <script type="module" src="popup.js"></script>
 </body>
 </html>

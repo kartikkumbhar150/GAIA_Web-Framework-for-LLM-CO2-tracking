@@ -7,7 +7,7 @@
     "skipLibCheck": true,
 
     /* Extension-specific fixes */
-    "types": ["chrome"],
+    "types": ["chrome","node"],
     "strict": true,
     "noImplicitAny": true,
 
