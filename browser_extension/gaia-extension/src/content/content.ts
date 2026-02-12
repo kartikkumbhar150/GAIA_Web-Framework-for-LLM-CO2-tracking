@@ -1468,10 +1468,13 @@ function injectStyles(): void {
     }
 
     .gaia-icon {
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-      cursor: pointer;
-      user-select: none;
-    }
+  width: 24px;
+  height: 24px;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  user-select: none;
+}
+
 
     .gaia-icon:hover {
       transform: scale(1.15) translateY(-3px) !important;

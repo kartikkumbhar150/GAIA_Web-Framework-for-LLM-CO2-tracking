@@ -1,4 +1,13 @@
-// ==================== CORE TYPES ====================
+// ==================== TYPE DEFINITIONS ====================
+
+export interface CO2Emissions {
+  perRequest: string;
+  per1MTokens?: string;
+  perImage?: string;
+  perMinute?: string;
+  rating: 'very-low' | 'low' | 'low-medium' | 'medium' | 'medium-high' | 'high' | 'very-high';
+  comparison: string;
+}
 
 export interface ModelRecommendation {
   name: string;
@@ -7,13 +16,14 @@ export interface ModelRecommendation {
   description: string;
   bestFor: string[];
   color: string;
-  tier: 'flagship' | 'premium' | 'specialized' | 'efficient' | 'value' | 'open-source' | 'enterprise';
+  tier: 'flagship' | 'premium' | 'efficient' | 'specialized' | 'value' | 'open-source' | 'enterprise';
   pricing: string;
   contextWindow?: string;
   features?: string[];
   strengths: string[];
   limitations: string[];
   useCase: string;
+  co2Emissions?: CO2Emissions;
 }
 
 export interface TaskCategory {
@@ -37,68 +47,45 @@ export interface Platform {
   color: string;
   description: string;
 }
-export type Tier = ModelRecommendation['tier'];
-
 
 export interface PlatformFeatures {
-  hasAPI: boolean;
-  hasFreeplan: boolean;
-  hasEnterprise: boolean;
-  multimodal: boolean;
+  streaming?: boolean;
+  batching?: boolean;
+  fineTuning?: boolean;
+  functionCalling?: boolean;
+  vision?: boolean;
+  audio?: boolean;
 }
 
-export interface PromptSuggestion {
-  type: "Clarity" | "Specificity" | "Context" | "Example" | "Constraint";
-  prompt: string;
-  explanation?: string;
-}
-
-export interface StorageData {
-  selectedModel?: string;
-  recentTasks?: string[];
-  favorites?: string[];
-  userPreferences?: UserPreferences;
-}
-
-export interface UserPreferences {
-  priority: 'quality' | 'speed' | 'cost' | 'balanced';
+export interface RecommendationCriteria {
+  taskType: string;
+  priority: 'quality' | 'speed' | 'cost' | 'balanced' | 'eco-friendly';
   budget: 'free' | 'low' | 'medium' | 'high';
   expertise: 'beginner' | 'intermediate' | 'expert';
   useCase: 'personal' | 'professional' | 'enterprise';
 }
 
-export interface RecommendationResult {
+export interface SmartRecommendation {
   primary: ModelRecommendation[];
   alternatives: ModelRecommendation[];
   reasoning: string[];
-  estimatedCost?: string;
-  bestPractices?: string[];
+}
+
+export interface UserPreferences {
+  priority: 'quality' | 'speed' | 'cost' | 'balanced' | 'eco-friendly';
+  budget: 'free' | 'low' | 'medium' | 'high';
+  expertise: 'beginner' | 'intermediate' | 'expert';
+  useCase: 'personal' | 'professional' | 'enterprise';
+}
+
+export interface StorageData {
+  userPreferences?: UserPreferences;
+  showEcoMetrics?: boolean;
+  comparisonModels?: string[];
 }
 
 export interface FilterOptions {
-  modelType: 'llm' | 'image' | 'video' | 'audio' | 'all';
+  type: 'all' | 'llm' | 'image' | 'video' | 'audio' | 'eco-friendly';
   tier?: ModelRecommendation['tier'];
   platform?: string;
-  budget?: 'free' | 'paid' | 'enterprise';
-}
-
-export interface ComparisonMetrics {
-  quality: number;
-  speed: number;
-  cost: number;
-  easeOfUse: number;
-  features: number;
-}
-
-export interface ModelComparison {
-  models: ModelRecommendation[];
-  metrics: ComparisonMetrics[];
-  winner: {
-    overall: string;
-    byCategory: {
-      quality: string;
-      speed: string;
-      cost: string;
-    };
-  };
 }

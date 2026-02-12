@@ -504,6 +504,13 @@
       border-radius: 10px;
       border: 2px solid var(--border);
       background: var(--bg-primary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .comparison-card:hover {
+      border-color: var(--primary);
+      background: rgba(16, 163, 127, 0.02);
     }
 
     .comparison-card-selected {
@@ -521,6 +528,7 @@
     .metric-label {
       font-size: 11px;
       color: var(--text-secondary);
+      min-width: 60px;
     }
 
     .metric-bar {
@@ -543,6 +551,8 @@
       font-size: 11px;
       font-weight: 700;
       color: var(--text-primary);
+      min-width: 30px;
+      text-align: right;
     }
 
     /* ========== RECOMMENDATIONS ========== */
@@ -682,6 +692,11 @@
       color: white;
     }
 
+    /* ========== CO2 BADGE ========== */
+    .co2-badge {
+      margin-top: 12px;
+    }
+
     /* ========== SCROLLBAR ========== */
     ::-webkit-scrollbar {
       width: 6px;
@@ -764,10 +779,12 @@
       text-align: center;
       cursor: pointer;
       transition: all 0.2s;
+      font-weight: 500;
     }
 
     .preference-option:hover {
       border-color: var(--primary);
+      background: rgba(16, 163, 127, 0.05);
     }
 
     .preference-option.selected {
@@ -775,6 +792,74 @@
       border-color: var(--primary);
       color: white;
       font-weight: 600;
+    }
+
+    /* ========== TOGGLE SWITCH ========== */
+    .toggle-group {
+      padding: 12px;
+      border-radius: 10px;
+      background: var(--bg-primary);
+      border: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .toggle-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .toggle-description {
+      font-size: 10px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--border);
+      transition: 0.3s;
+      border-radius: 24px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+      background-color: var(--primary);
+    }
+
+    input:checked + .toggle-slider:before {
+      transform: translateX(20px);
     }
   </style>
 </head>
@@ -819,6 +904,7 @@
         <div class="chip" data-filter="image">🖼️ Images</div>
         <div class="chip" data-filter="video">🎬 Video</div>
         <div class="chip" data-filter="audio">🎙️ Audio</div>
+        <div class="chip" data-filter="eco-friendly">🌱 Eco-Friendly</div>
       </div>
 
       <!-- Quick Tasks -->
@@ -854,7 +940,13 @@
         <div class="section-title">Model Comparison</div>
         <div class="section-subtitle">Select models to compare side-by-side</div>
         <div id="comparison-selector"></div>
-        <div class="comparison-container" id="comparison-results"></div>
+        <div class="comparison-container" id="comparison-results">
+          <div class="empty-state">
+            <div class="empty-icon">⚖️</div>
+            <div class="empty-title">Select at least 2 models</div>
+            <div class="empty-subtitle">Click on models above to compare</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -872,6 +964,7 @@
               <div class="preference-option" data-pref="priority" data-value="quality">⭐ Quality</div>
               <div class="preference-option" data-pref="priority" data-value="speed">⚡ Speed</div>
               <div class="preference-option" data-pref="priority" data-value="cost">💰 Cost</div>
+              <div class="preference-option" data-pref="priority" data-value="eco-friendly">🌱 Eco</div>
             </div>
           </div>
 
@@ -901,6 +994,17 @@
               <div class="preference-option" data-pref="useCase" data-value="personal">🏠 Personal</div>
               <div class="preference-option" data-pref="useCase" data-value="enterprise">🏢 Enterprise</div>
             </div>
+          </div>
+
+          <div class="toggle-group">
+            <div>
+              <div class="toggle-label">🌍 Show CO₂ Emissions</div>
+              <div class="toggle-description">Display environmental impact metrics</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="eco-metrics-toggle">
+              <span class="toggle-slider"></span>
+            </label>
           </div>
         </div>
       </div>

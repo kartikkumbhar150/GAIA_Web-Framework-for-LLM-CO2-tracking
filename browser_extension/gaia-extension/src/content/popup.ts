@@ -5,13 +5,17 @@ import {
   AUDIO_MODELS,
   TASK_CATEGORIES,
   PLATFORMS,
-  getSmartRecommendations
+  getSmartRecommendations,
+  getCO2RatingColor,
+  getCO2RatingIcon,
+  getCO2RatingLabel,
+  getEcoFriendlyModels
 } from './constants';
 import type { 
   ModelRecommendation, 
   UserPreferences,
-  StorageData,
-  FilterOptions
+  TaskCategory,
+  StorageData
 } from './types';
 
 // ==================== AUTH CHECK ====================
@@ -287,6 +291,7 @@ class GAIAController {
   private selectedTask: string | null = null;
   private userPreferences: UserPreferences;
   private comparisonModels: ModelRecommendation[] = [];
+  private showEcoMetrics: boolean = false;
 
   constructor() {
     // Initialize with proper default values
@@ -305,20 +310,30 @@ class GAIAController {
   // ========== INITIALIZATION ==========
 
   private async loadPreferences() {
-    const data = await chrome.storage.local.get('userPreferences');
-    if (data.userPreferences) {
-      const saved = data.userPreferences as Partial<UserPreferences>;
-      this.userPreferences = {
-        priority: saved.priority ?? 'balanced',
-        budget: saved.budget ?? 'medium',
-        expertise: saved.expertise ?? 'intermediate',
-        useCase: saved.useCase ?? 'professional'
-      };
-    }
+  const data = await chrome.storage.local.get([
+    'userPreferences',
+    'showEcoMetrics'
+  ]) as Partial<StorageData>;
+
+  const saved = data.userPreferences;
+
+  if (saved) {
+    this.userPreferences = {
+      priority: saved.priority ?? 'balanced',
+      budget: saved.budget ?? 'medium',
+      expertise: saved.expertise ?? 'intermediate',
+      useCase: saved.useCase ?? 'professional'
+    };
   }
 
+  this.showEcoMetrics = Boolean(data.showEcoMetrics);
+}
+
   private async savePreferences() {
-    await chrome.storage.local.set({ userPreferences: this.userPreferences });
+    await chrome.storage.local.set({ 
+      userPreferences: this.userPreferences,
+      showEcoMetrics: this.showEcoMetrics
+    });
   }
 
   private initializeUI() {
@@ -336,9 +351,11 @@ class GAIAController {
 
     // Search
     const searchInput = document.getElementById('search-input') as HTMLInputElement;
-    searchInput.addEventListener('input', (e) => {
-      this.handleSearch((e.target as HTMLInputElement).value);
-    });
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        this.handleSearch((e.target as HTMLInputElement).value);
+      });
+    }
 
     // Filters
     document.querySelectorAll('.chip').forEach(chip => {
@@ -349,6 +366,17 @@ class GAIAController {
     document.querySelectorAll('.preference-option').forEach(option => {
       option.addEventListener('click', () => this.handlePreferenceChange(option));
     });
+
+    // Eco metrics toggle
+    const ecoToggle = document.getElementById('eco-metrics-toggle');
+    if (ecoToggle) {
+      ecoToggle.addEventListener('change', (e) => {
+        this.showEcoMetrics = (e.target as HTMLInputElement).checked;
+        this.savePreferences();
+        this.refreshCurrentView();
+      });
+      (ecoToggle as HTMLInputElement).checked = this.showEcoMetrics;
+    }
   }
 
   // ========== TAB MANAGEMENT ==========
@@ -422,7 +450,7 @@ class GAIAController {
 
   // ========== RECOMMENDATIONS ==========
 
-  private showRecommendations(task: typeof TASK_CATEGORIES[0]) {
+  private showRecommendations(task: TaskCategory) {
     const container = document.getElementById('recommendations-container');
     if (!container) return;
 
@@ -441,7 +469,7 @@ class GAIAController {
     }, 800);
   }
 
-  private generateRecommendations(task: typeof TASK_CATEGORIES[0]) {
+  private generateRecommendations(task: TaskCategory) {
     const recs: { [key: string]: ModelRecommendation[] } = {};
     
     // Get LLM recommendations
@@ -459,7 +487,6 @@ class GAIAController {
       
       if (this.userPreferences.priority === 'cost') {
         recs.llm.sort((a, b) => {
-          // Fixed: Add all possible tier values to the type definition
           const tierOrder: Record<ModelRecommendation['tier'], number> = { 
             'value': 0, 
             'efficient': 1, 
@@ -471,6 +498,22 @@ class GAIAController {
           };
           return tierOrder[a.tier] - tierOrder[b.tier];
         });
+      } else if (this.userPreferences.priority === 'eco-friendly') {
+        // Sort by CO2 emissions rating
+        recs.llm.sort((a, b) => {
+          const ratingOrder: Record<string, number> = {
+            'very-low': 1,
+            'low': 2,
+            'low-medium': 3,
+            'medium': 4,
+            'medium-high': 5,
+            'high': 6,
+            'very-high': 7
+          };
+          const aRating = a.co2Emissions?.rating || 'medium';
+          const bRating = b.co2Emissions?.rating || 'medium';
+          return ratingOrder[aRating] - ratingOrder[bRating];
+        });
       }
     }
 
@@ -479,6 +522,18 @@ class GAIAController {
       recs.image = IMAGE_MODELS.filter(m => 
         task.recommendedModels.image?.includes(m.name)
       );
+      
+      if (this.userPreferences.priority === 'eco-friendly' && recs.image.length > 0) {
+        recs.image.sort((a, b) => {
+          const ratingOrder: Record<string, number> = {
+            'very-low': 1, 'low': 2, 'low-medium': 3, 'medium': 4,
+            'medium-high': 5, 'high': 6, 'very-high': 7
+          };
+          const aRating = a.co2Emissions?.rating || 'medium';
+          const bRating = b.co2Emissions?.rating || 'medium';
+          return ratingOrder[aRating] - ratingOrder[bRating];
+        });
+      }
     }
 
     // Get Video recommendations
@@ -486,6 +541,18 @@ class GAIAController {
       recs.video = VIDEO_MODELS.filter(m => 
         task.recommendedModels.video?.includes(m.name)
       );
+      
+      if (this.userPreferences.priority === 'eco-friendly' && recs.video.length > 0) {
+        recs.video.sort((a, b) => {
+          const ratingOrder: Record<string, number> = {
+            'very-low': 1, 'low': 2, 'low-medium': 3, 'medium': 4,
+            'medium-high': 5, 'high': 6, 'very-high': 7
+          };
+          const aRating = a.co2Emissions?.rating || 'medium';
+          const bRating = b.co2Emissions?.rating || 'medium';
+          return ratingOrder[aRating] - ratingOrder[bRating];
+        });
+      }
     }
 
     // Get Audio recommendations
@@ -493,15 +560,35 @@ class GAIAController {
       recs.audio = AUDIO_MODELS.filter(m => 
         task.recommendedModels.audio?.includes(m.name)
       );
+      
+      if (this.userPreferences.priority === 'eco-friendly' && recs.audio.length > 0) {
+        recs.audio.sort((a, b) => {
+          const ratingOrder: Record<string, number> = {
+            'very-low': 1, 'low': 2, 'low-medium': 3, 'medium': 4,
+            'medium-high': 5, 'high': 6, 'very-high': 7
+          };
+          const aRating = a.co2Emissions?.rating || 'medium';
+          const bRating = b.co2Emissions?.rating || 'medium';
+          return ratingOrder[aRating] - ratingOrder[bRating];
+        });
+      }
     }
 
     return recs;
   }
 
   private renderRecommendations(
-    task: typeof TASK_CATEGORIES[0],
+    task: TaskCategory,
     recommendations: { [key: string]: ModelRecommendation[] }
   ): string {
+    const priorityLabels = {
+      'quality': 'highest quality',
+      'speed': 'fastest performance',
+      'cost': 'best value',
+      'balanced': 'balanced performance',
+      'eco-friendly': 'lowest environmental impact'
+    };
+
     let html = `
       <div class="recommendation-card">
         <div class="recommendation-header">
@@ -515,7 +602,7 @@ class GAIAController {
         <div class="reason-list">
           <div class="reason-item">
             <span class="reason-icon">✓</span>
-            <span>Optimized for ${this.userPreferences.priority} priority</span>
+            <span>Optimized for ${priorityLabels[this.userPreferences.priority]}</span>
           </div>
           <div class="reason-item">
             <span class="reason-icon">✓</span>
@@ -557,6 +644,31 @@ class GAIAController {
 
   private createModelCard(model: ModelRecommendation): string {
     const tierClass = `tier-${model.tier.replace(' ', '-')}`;
+    const co2 = model.co2Emissions;
+    
+    // CO2 badge HTML
+    const co2Badge = co2 && this.showEcoMetrics ? `
+      <div class="co2-badge" style="
+        background: ${getCO2RatingColor(co2.rating)}15;
+        border-left: 3px solid ${getCO2RatingColor(co2.rating)};
+        padding: 8px 12px;
+        margin-top: 12px;
+        border-radius: 6px;
+      ">
+        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+          <span style="font-size: 14px;">${getCO2RatingIcon(co2.rating)}</span>
+          <span style="
+            font-size: 11px;
+            font-weight: 600;
+            color: ${getCO2RatingColor(co2.rating)};
+          ">${getCO2RatingLabel(co2.rating)}</span>
+        </div>
+        <div style="font-size: 11px; color: #6b7280;">
+          ${co2.perRequest} per request
+          ${co2.comparison ? `<br/><span style="font-size: 10px;">${co2.comparison}</span>` : ''}
+        </div>
+      </div>
+    ` : '';
     
     return `
       <div class="model-card" style="--model-color: ${model.color}; --icon-bg: ${model.color}15; --tag-bg: ${model.color}15; --tag-color: ${model.color}">
@@ -579,6 +691,8 @@ class GAIAController {
             `<div class="model-tag">${tag}</div>`
           ).join('')}
         </div>
+
+        ${co2Badge}
 
         <div class="model-footer">
           <div class="model-pricing">${model.pricing}</div>
@@ -615,6 +729,9 @@ class GAIAController {
       case 'audio':
         allModels = AUDIO_MODELS;
         break;
+      case 'eco-friendly':
+        allModels = getEcoFriendlyModels('low');
+        break;
       default:
         allModels = [
           ...LLM_MODELS.slice(0, 3),
@@ -622,6 +739,19 @@ class GAIAController {
           ...VIDEO_MODELS.slice(0, 2),
           ...AUDIO_MODELS.slice(0, 2)
         ];
+    }
+
+    // Sort by eco-friendliness if eco-friendly priority is set
+    if (this.userPreferences.priority === 'eco-friendly') {
+      allModels.sort((a, b) => {
+        const ratingOrder: Record<string, number> = {
+          'very-low': 1, 'low': 2, 'low-medium': 3, 'medium': 4,
+          'medium-high': 5, 'high': 6, 'very-high': 7
+        };
+        const aRating = a.co2Emissions?.rating || 'medium';
+        const bRating = b.co2Emissions?.rating || 'medium';
+        return ratingOrder[aRating] - ratingOrder[bRating];
+      });
     }
 
     grid.innerHTML = allModels.map(model => this.createModelCard(model)).join('');
@@ -726,6 +856,11 @@ class GAIAController {
     // Show toast
     this.showToast(`Preference updated: ${pref} = ${value}`);
 
+    // Refresh current view
+    this.refreshCurrentView();
+  }
+
+  private refreshCurrentView() {
     // Refresh recommendations if task is selected
     if (this.selectedTask) {
       const task = TASK_CATEGORIES.find(t => t.id === this.selectedTask);
@@ -733,6 +868,9 @@ class GAIAController {
         this.showRecommendations(task);
       }
     }
+    
+    // Refresh all models view
+    this.showAllModels();
   }
 
   // ========== COMPARISON ==========
@@ -767,9 +905,12 @@ class GAIAController {
 
   private updateComparison() {
     const selected = document.querySelectorAll('.comparison-card-selected');
+    const resultsContainer = document.getElementById('comparison-results');
+    
+    if (!resultsContainer) return;
     
     if (selected.length < 2) {
-      document.getElementById('comparison-results')!.innerHTML = `
+      resultsContainer.innerHTML = `
         <div class="empty-state">
           <div class="empty-icon">⚖️</div>
           <div class="empty-title">Select at least 2 models</div>
@@ -780,48 +921,63 @@ class GAIAController {
     }
 
     // Render comparison
-    const modelNames = Array.from(selected).map(el => el.getAttribute('data-model-name'));
+    const modelNames = Array.from(selected).map(el => el.getAttribute('data-model-name')).filter(Boolean) as string[];
     const models = LLM_MODELS.filter(m => modelNames.includes(m.name));
-
-    const resultsContainer = document.getElementById('comparison-results');
-    if (!resultsContainer) return;
 
     resultsContainer.innerHTML = `
       <div class="comparison-grid">
-        ${models.map(model => `
-          <div class="model-card">
-            <div class="model-header">
-              <div class="model-icon">${model.icon}</div>
-              <div class="model-info">
-                <div class="model-name">${model.name}</div>
-                <div class="model-platform">${model.platform}</div>
-              </div>
-            </div>
-            <div style="margin-top: 12px;">
-              <div class="metric-row">
-                <span class="metric-label">Quality</span>
-                <div class="metric-bar">
-                  <div class="metric-fill" style="width: ${this.getQualityScore(model)}%"></div>
-                </div>
-                <span class="metric-value">${this.getQualityScore(model)}</span>
-              </div>
-              <div class="metric-row">
-                <span class="metric-label">Speed</span>
-                <div class="metric-bar">
-                  <div class="metric-fill" style="width: ${this.getSpeedScore(model)}%"></div>
-                </div>
-                <span class="metric-value">${this.getSpeedScore(model)}</span>
-              </div>
-              <div class="metric-row">
-                <span class="metric-label">Cost</span>
-                <div class="metric-bar">
-                  <div class="metric-fill" style="width: ${this.getCostScore(model)}%"></div>
-                </div>
-                <span class="metric-value">${this.getCostScore(model)}</span>
-              </div>
-            </div>
+        ${models.map(model => this.renderComparisonCard(model)).join('')}
+      </div>
+    `;
+  }
+
+  private renderComparisonCard(model: ModelRecommendation): string {
+    const co2 = model.co2Emissions;
+    
+    return `
+      <div class="model-card">
+        <div class="model-header">
+          <div class="model-icon">${model.icon}</div>
+          <div class="model-info">
+            <div class="model-name">${model.name}</div>
+            <div class="model-platform">${model.platform}</div>
           </div>
-        `).join('')}
+        </div>
+        <div style="margin-top: 12px;">
+          <div class="metric-row">
+            <span class="metric-label">Quality</span>
+            <div class="metric-bar">
+              <div class="metric-fill" style="width: ${this.getQualityScore(model)}%"></div>
+            </div>
+            <span class="metric-value">${this.getQualityScore(model)}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Speed</span>
+            <div class="metric-bar">
+              <div class="metric-fill" style="width: ${this.getSpeedScore(model)}%"></div>
+            </div>
+            <span class="metric-value">${this.getSpeedScore(model)}</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Cost</span>
+            <div class="metric-bar">
+              <div class="metric-fill" style="width: ${this.getCostScore(model)}%"></div>
+            </div>
+            <span class="metric-value">${this.getCostScore(model)}</span>
+          </div>
+          ${co2 ? `
+            <div class="metric-row">
+              <span class="metric-label">Eco ${getCO2RatingIcon(co2.rating)}</span>
+              <div class="metric-bar">
+                <div class="metric-fill" style="
+                  width: ${this.getEcoScore(model)}%;
+                  background: ${getCO2RatingColor(co2.rating)};
+                "></div>
+              </div>
+              <span class="metric-value">${this.getEcoScore(model)}</span>
+            </div>
+          ` : ''}
+        </div>
       </div>
     `;
   }
@@ -863,6 +1019,20 @@ class GAIAController {
       'enterprise': 40
     };
     return tierScores[model.tier];
+  }
+
+  private getEcoScore(model: ModelRecommendation): number {
+    const ratingScores: Record<string, number> = {
+      'very-low': 100,
+      'low': 85,
+      'low-medium': 75,
+      'medium': 60,
+      'medium-high': 45,
+      'high': 30,
+      'very-high': 15
+    };
+    const rating = model.co2Emissions?.rating || 'medium';
+    return ratingScores[rating];
   }
 
   // ========== UTILITIES ==========

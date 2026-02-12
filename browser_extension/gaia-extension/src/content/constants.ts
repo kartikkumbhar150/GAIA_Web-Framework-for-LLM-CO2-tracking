@@ -1,9 +1,75 @@
-import type { 
-  ModelRecommendation, 
-  TaskCategory, 
-  Platform,
-  PlatformFeatures 
-} from './types';
+// ==================== TYPE DEFINITIONS ====================
+
+export interface CO2Emissions {
+  perRequest: string;
+  per1MTokens?: string;
+  perImage?: string;
+  perMinute?: string;
+  rating: 'very-low' | 'low' | 'low-medium' | 'medium' | 'medium-high' | 'high' | 'very-high';
+  comparison: string;
+}
+
+export interface ModelRecommendation {
+  name: string;
+  platform: string;
+  icon: string;
+  description: string;
+  bestFor: string[];
+  color: string;
+  tier: 'flagship' | 'premium' | 'efficient' | 'specialized' | 'value' | 'open-source' | 'enterprise';
+  pricing: string;
+  contextWindow?: string;
+  features?: string[];
+  strengths: string[];
+  limitations: string[];
+  useCase: string;
+  co2Emissions?: CO2Emissions;
+}
+
+export interface TaskCategory {
+  id: string;
+  name: string;
+  icon: string;
+  tasks: string[];
+  recommendedModels: {
+    llm?: string[];
+    image?: string[];
+    video?: string[];
+    audio?: string[];
+  };
+}
+
+export interface Platform {
+  name: string;
+  website: string;
+  apiDocs: string;
+  logo: string;
+  color: string;
+  description: string;
+}
+
+export interface PlatformFeatures {
+  streaming?: boolean;
+  batching?: boolean;
+  fineTuning?: boolean;
+  functionCalling?: boolean;
+  vision?: boolean;
+  audio?: boolean;
+}
+
+export interface RecommendationCriteria {
+  taskType: string;
+  priority: 'quality' | 'speed' | 'cost' | 'balanced' | 'eco-friendly';
+  budget: 'free' | 'low' | 'medium' | 'high';
+  expertise: 'beginner' | 'intermediate' | 'expert';
+  useCase: 'personal' | 'professional' | 'enterprise';
+}
+
+export interface SmartRecommendation {
+  primary: ModelRecommendation[];
+  alternatives: ModelRecommendation[];
+  reasoning: string[];
+}
 
 // ==================== LLM MODELS ====================
 
@@ -21,7 +87,13 @@ export const LLM_MODELS: ModelRecommendation[] = [
     contextWindow: "400K tokens",
     strengths: ["Coding excellence", "Multi-step reasoning", "Professional work"],
     limitations: ["Higher cost", "Slower responses"],
-    useCase: "Best for complex professional tasks requiring deep analysis"
+    useCase: "Best for complex professional tasks requiring deep analysis",
+    co2Emissions: {
+      perRequest: "15.2g CO₂e",
+      per1MTokens: "450g CO₂e",
+      rating: "high",
+      comparison: "3x average model"
+    }
   },
   {
     name: "GPT-4.5 Turbo",
@@ -35,7 +107,13 @@ export const LLM_MODELS: ModelRecommendation[] = [
     contextWindow: "128K tokens",
     strengths: ["Speed", "Reliability", "Wide capability"],
     limitations: ["Less reasoning depth than GPT-5"],
-    useCase: "Everyday tasks and rapid prototyping"
+    useCase: "Everyday tasks and rapid prototyping",
+    co2Emissions: {
+      perRequest: "4.7g CO₂e",
+      per1MTokens: "140g CO₂e",
+      rating: "medium",
+      comparison: "~1x average model"
+    }
   },
   {
     name: "o3-mini",
@@ -49,7 +127,13 @@ export const LLM_MODELS: ModelRecommendation[] = [
     contextWindow: "200K tokens",
     strengths: ["Mathematical reasoning", "Scientific analysis"],
     limitations: ["Slower generation", "Specialized use"],
-    useCase: "STEM education and technical problem-solving"
+    useCase: "STEM education and technical problem-solving",
+    co2Emissions: {
+      perRequest: "8.3g CO₂e",
+      per1MTokens: "250g CO₂e",
+      rating: "medium-high",
+      comparison: "1.7x average model"
+    }
   },
 
   // Anthropic Claude Models
@@ -65,7 +149,13 @@ export const LLM_MODELS: ModelRecommendation[] = [
     contextWindow: "200K tokens (1M beta)",
     strengths: ["Multi-step reasoning", "Agent capabilities", "Safety"],
     limitations: ["Limited availability", "Higher cost"],
-    useCase: "Enterprise applications requiring highest capability"
+    useCase: "Enterprise applications requiring highest capability",
+    co2Emissions: {
+      perRequest: "12.8g CO₂e",
+      per1MTokens: "380g CO₂e",
+      rating: "high",
+      comparison: "2.5x average model"
+    }
   },
   {
     name: "Claude Sonnet 4.5",
@@ -79,7 +169,13 @@ export const LLM_MODELS: ModelRecommendation[] = [
     contextWindow: "200K tokens",
     strengths: ["Coding (77.2% SWE-bench)", "Speed", "Reliability"],
     limitations: ["Less powerful than Opus"],
-    useCase: "Professional daily work and coding tasks"
+    useCase: "Professional daily work and coding tasks",
+    co2Emissions: {
+      perRequest: "3.2g CO₂e",
+      per1MTokens: "95g CO₂e",
+      rating: "low",
+      comparison: "0.6x average model"
+    }
   },
   {
     name: "Claude Haiku 4.5",
@@ -93,7 +189,13 @@ export const LLM_MODELS: ModelRecommendation[] = [
     contextWindow: "200K tokens",
     strengths: ["Speed", "Cost efficiency", "Reliability"],
     limitations: ["Less capable than Sonnet/Opus"],
-    useCase: "High-volume simple tasks and chatbots"
+    useCase: "High-volume simple tasks and chatbots",
+    co2Emissions: {
+      perRequest: "0.8g CO₂e",
+      per1MTokens: "25g CO₂e",
+      rating: "very-low",
+      comparison: "0.15x average model"
+    }
   },
 
   // Google Gemini Models
@@ -109,7 +211,13 @@ export const LLM_MODELS: ModelRecommendation[] = [
     contextWindow: "2M tokens",
     strengths: ["ARC-AGI-2 (45.1%)", "Massive context", "Multimodal"],
     limitations: ["API access limited"],
-    useCase: "Advanced research and complex multimodal tasks"
+    useCase: "Advanced research and complex multimodal tasks",
+    co2Emissions: {
+      perRequest: "18.5g CO₂e",
+      per1MTokens: "550g CO₂e",
+      rating: "very-high",
+      comparison: "3.6x average model"
+    }
   },
   {
     name: "Gemini 2.5 Flash",
@@ -123,7 +231,13 @@ export const LLM_MODELS: ModelRecommendation[] = [
     contextWindow: "1M tokens",
     strengths: ["Ultra-fast", "Cost-effective", "Stable"],
     limitations: ["Less capability than Pro"],
-    useCase: "Production APIs and high-volume processing"
+    useCase: "Production APIs and high-volume processing",
+    co2Emissions: {
+      perRequest: "1.2g CO₂e",
+      per1MTokens: "35g CO₂e",
+      rating: "very-low",
+      comparison: "0.23x average model"
+    }
   },
 
   // DeepSeek Models
@@ -139,7 +253,13 @@ export const LLM_MODELS: ModelRecommendation[] = [
     contextWindow: "128K tokens",
     strengths: ["90% cheaper than GPT-5", "Strong reasoning", "Open weights"],
     limitations: ["Smaller context window"],
-    useCase: "Cost-effective development and experimentation"
+    useCase: "Cost-effective development and experimentation",
+    co2Emissions: {
+      perRequest: "2.1g CO₂e",
+      per1MTokens: "65g CO₂e",
+      rating: "low",
+      comparison: "0.4x average model"
+    }
   },
   {
     name: "DeepSeek R1",
@@ -153,7 +273,13 @@ export const LLM_MODELS: ModelRecommendation[] = [
     contextWindow: "128K tokens",
     strengths: ["Cost-effective reasoning", "Transparent AI"],
     limitations: ["Specialized use case"],
-    useCase: "Academic research and technical analysis"
+    useCase: "Academic research and technical analysis",
+    co2Emissions: {
+      perRequest: "5.4g CO₂e",
+      per1MTokens: "160g CO₂e",
+      rating: "medium",
+      comparison: "1.1x average model"
+    }
   },
 
   // Meta Llama Models
@@ -169,7 +295,13 @@ export const LLM_MODELS: ModelRecommendation[] = [
     contextWindow: "128K tokens",
     strengths: ["Open weights", "Multimodal", "Customizable"],
     limitations: ["Requires infrastructure"],
-    useCase: "Enterprise on-premise and custom deployments"
+    useCase: "Enterprise on-premise and custom deployments",
+    co2Emissions: {
+      perRequest: "Variable",
+      per1MTokens: "120-400g CO₂e",
+      rating: "medium",
+      comparison: "Depends on infrastructure (renewable energy = 0.8x, coal = 2.6x)"
+    }
   },
   {
     name: "Llama 4 70B",
@@ -183,7 +315,13 @@ export const LLM_MODELS: ModelRecommendation[] = [
     contextWindow: "128K tokens",
     strengths: ["Runs locally", "Customizable", "Privacy"],
     limitations: ["Lower capability than 405B"],
-    useCase: "Local AI applications and privacy-focused projects"
+    useCase: "Local AI applications and privacy-focused projects",
+    co2Emissions: {
+      perRequest: "Variable",
+      per1MTokens: "40-180g CO₂e",
+      rating: "low-medium",
+      comparison: "Depends on infrastructure (renewable = 0.3x, coal = 1.2x)"
+    }
   },
 
   // Perplexity Models
@@ -199,7 +337,13 @@ export const LLM_MODELS: ModelRecommendation[] = [
     contextWindow: "128K tokens",
     strengths: ["Unbiased", "US-hosted", "Research-focused"],
     limitations: ["Less content filtering"],
-    useCase: "Academic and enterprise research workflows"
+    useCase: "Academic and enterprise research workflows",
+    co2Emissions: {
+      perRequest: "6.8g CO₂e",
+      per1MTokens: "205g CO₂e",
+      rating: "medium",
+      comparison: "1.4x average model"
+    }
   },
 
   // Alibaba Qwen Models
@@ -215,7 +359,13 @@ export const LLM_MODELS: ModelRecommendation[] = [
     contextWindow: "128K tokens",
     strengths: ["119 languages", "AIME25 (92.3%)", "Massive scale"],
     limitations: ["Less available globally"],
-    useCase: "Multilingual applications and large-scale projects"
+    useCase: "Multilingual applications and large-scale projects",
+    co2Emissions: {
+      perRequest: "22.5g CO₂e",
+      per1MTokens: "680g CO₂e",
+      rating: "very-high",
+      comparison: "4.5x average model"
+    }
   },
 
   // Mistral Models
@@ -231,7 +381,13 @@ export const LLM_MODELS: ModelRecommendation[] = [
     contextWindow: "128K tokens",
     strengths: ["GDPR compliant", "Strong coding", "Low latency"],
     limitations: ["Smaller ecosystem"],
-    useCase: "European enterprises and privacy-focused applications"
+    useCase: "European enterprises and privacy-focused applications",
+    co2Emissions: {
+      perRequest: "4.2g CO₂e",
+      per1MTokens: "125g CO₂e",
+      rating: "low-medium",
+      comparison: "0.8x average model"
+    }
   },
 
   // xAI Grok Models
@@ -247,7 +403,13 @@ export const LLM_MODELS: ModelRecommendation[] = [
     contextWindow: "128K tokens",
     strengths: ["Real-time data", "X integration", "Current events"],
     limitations: ["Limited availability"],
-    useCase: "Social media analysis and real-time insights"
+    useCase: "Social media analysis and real-time insights",
+    co2Emissions: {
+      perRequest: "7.5g CO₂e",
+      per1MTokens: "225g CO₂e",
+      rating: "medium-high",
+      comparison: "1.5x average model"
+    }
   },
 
   // Cohere Models
@@ -263,7 +425,13 @@ export const LLM_MODELS: ModelRecommendation[] = [
     contextWindow: "128K tokens",
     strengths: ["RAG optimization", "Enterprise tools", "Multilingual"],
     limitations: ["Specialized for enterprise"],
-    useCase: "Enterprise search and retrieval systems"
+    useCase: "Enterprise search and retrieval systems",
+    co2Emissions: {
+      perRequest: "3.8g CO₂e",
+      per1MTokens: "115g CO₂e",
+      rating: "low-medium",
+      comparison: "0.75x average model"
+    }
   }
 ];
 
@@ -282,7 +450,13 @@ export const IMAGE_MODELS: ModelRecommendation[] = [
     features: ["4K resolution", "4.5s generation", "Licensed training"],
     strengths: ["Highest quality", "Fast", "Commercial safe"],
     limitations: ["Cost per image"],
-    useCase: "Professional photography and commercial projects"
+    useCase: "Professional photography and commercial projects",
+    co2Emissions: {
+      perRequest: "12.5g CO₂e",
+      perImage: "12.5g CO₂e",
+      rating: "medium-high",
+      comparison: "1.8x average image model"
+    }
   },
   {
     name: "FLUX.1 Schnell",
@@ -296,7 +470,13 @@ export const IMAGE_MODELS: ModelRecommendation[] = [
     features: ["1-2s generation", "1024x1024", "Commercial use"],
     strengths: ["Fastest generation", "Cost-effective"],
     limitations: ["Slightly lower quality"],
-    useCase: "Rapid prototyping and high-volume generation"
+    useCase: "Rapid prototyping and high-volume generation",
+    co2Emissions: {
+      perRequest: "2.8g CO₂e",
+      perImage: "2.8g CO₂e",
+      rating: "low",
+      comparison: "0.4x average image model"
+    }
   },
   {
     name: "Midjourney v7",
@@ -310,7 +490,13 @@ export const IMAGE_MODELS: ModelRecommendation[] = [
     features: ["Style reference", "Web interface", "Stealth mode"],
     strengths: ["Best aesthetics", "Artistic quality", "Community"],
     limitations: ["No API", "Subscription only"],
-    useCase: "Concept art, creative projects, and inspiration"
+    useCase: "Concept art, creative projects, and inspiration",
+    co2Emissions: {
+      perRequest: "8.2g CO₂e",
+      perImage: "8.2g CO₂e",
+      rating: "medium",
+      comparison: "1.2x average image model"
+    }
   },
   {
     name: "DALL-E 3 HD",
@@ -324,7 +510,13 @@ export const IMAGE_MODELS: ModelRecommendation[] = [
     features: ["ChatGPT integration", "Text accuracy", "1024x1792"],
     strengths: ["Prompt adherence", "Text rendering", "Ease of use"],
     limitations: ["Less artistic than Midjourney"],
-    useCase: "Marketing materials and precise visualizations"
+    useCase: "Marketing materials and precise visualizations",
+    co2Emissions: {
+      perRequest: "9.8g CO₂e",
+      perImage: "9.8g CO₂e",
+      rating: "medium",
+      comparison: "1.4x average image model"
+    }
   },
   {
     name: "Stable Diffusion 3.5",
@@ -338,7 +530,13 @@ export const IMAGE_MODELS: ModelRecommendation[] = [
     features: ["Open weights", "LoRA support", "ComfyUI"],
     strengths: ["Free", "Customizable", "Privacy"],
     limitations: ["Technical setup", "Variable quality"],
-    useCase: "Custom workflows and specialized styles"
+    useCase: "Custom workflows and specialized styles",
+    co2Emissions: {
+      perRequest: "Variable",
+      perImage: "3-15g CO₂e",
+      rating: "low-medium",
+      comparison: "Depends on hardware (GPU efficiency varies 0.4-2.1x)"
+    }
   },
   {
     name: "Adobe Firefly Image 3",
@@ -352,7 +550,13 @@ export const IMAGE_MODELS: ModelRecommendation[] = [
     features: ["Licensed data", "Adobe integration", "Vector support"],
     strengths: ["Legal safety", "Workflow integration"],
     limitations: ["Requires Adobe subscription"],
-    useCase: "Professional design and commercial projects"
+    useCase: "Professional design and commercial projects",
+    co2Emissions: {
+      perRequest: "7.5g CO₂e",
+      perImage: "7.5g CO₂e",
+      rating: "medium",
+      comparison: "1.1x average image model"
+    }
   },
   {
     name: "Ideogram 2.0",
@@ -366,7 +570,13 @@ export const IMAGE_MODELS: ModelRecommendation[] = [
     features: ["Perfect text", "Logo design", "Multiple styles"],
     strengths: ["Text accuracy", "Logo creation"],
     limitations: ["Newer platform"],
-    useCase: "Logo design and text-heavy graphics"
+    useCase: "Logo design and text-heavy graphics",
+    co2Emissions: {
+      perRequest: "5.2g CO₂e",
+      perImage: "5.2g CO₂e",
+      rating: "low-medium",
+      comparison: "0.75x average image model"
+    }
   },
   {
     name: "Leonardo.ai",
@@ -380,7 +590,13 @@ export const IMAGE_MODELS: ModelRecommendation[] = [
     features: ["150 daily free", "Character consistency", "Asset packs"],
     strengths: ["Character consistency", "Game assets"],
     limitations: ["Focused on gaming"],
-    useCase: "Game development and character creation"
+    useCase: "Game development and character creation",
+    co2Emissions: {
+      perRequest: "6.8g CO₂e",
+      perImage: "6.8g CO₂e",
+      rating: "medium",
+      comparison: "1.0x average image model"
+    }
   },
   {
     name: "Imagen 3",
@@ -394,7 +610,13 @@ export const IMAGE_MODELS: ModelRecommendation[] = [
     features: ["GCP integration", "Enterprise scale", "Safety"],
     strengths: ["Enterprise features", "Google ecosystem"],
     limitations: ["Limited public access"],
-    useCase: "Enterprise applications in Google Cloud"
+    useCase: "Enterprise applications in Google Cloud",
+    co2Emissions: {
+      perRequest: "10.2g CO₂e",
+      perImage: "10.2g CO₂e",
+      rating: "medium-high",
+      comparison: "1.5x average image model"
+    }
   },
   {
     name: "Playground AI",
@@ -408,7 +630,13 @@ export const IMAGE_MODELS: ModelRecommendation[] = [
     features: ["Free tier", "Multiple models", "Easy interface"],
     strengths: ["Generous free tier", "Multiple models"],
     limitations: ["Free images are public"],
-    useCase: "Learning and high-volume testing"
+    useCase: "Learning and high-volume testing",
+    co2Emissions: {
+      perRequest: "4.5g CO₂e",
+      perImage: "4.5g CO₂e",
+      rating: "low-medium",
+      comparison: "0.65x average image model"
+    }
   }
 ];
 
@@ -427,7 +655,13 @@ export const VIDEO_MODELS: ModelRecommendation[] = [
     features: ["Up to 60s", "1080p", "Native audio", "C2PA watermarks"],
     strengths: ["Best physics", "Synchronized audio", "Photorealism"],
     limitations: ["Limited access", "High cost", "US/Canada only"],
-    useCase: "High-end video production and commercials"
+    useCase: "High-end video production and commercials",
+    co2Emissions: {
+      perRequest: "285g CO₂e",
+      perMinute: "475g CO₂e",
+      rating: "very-high",
+      comparison: "4.2x average video model"
+    }
   },
   {
     name: "Runway Gen-4.5",
@@ -441,7 +675,13 @@ export const VIDEO_MODELS: ModelRecommendation[] = [
     features: ["4K resolution", "Motion brush", "Camera controls"],
     strengths: ["Precision control", "4K output", "Professional tools"],
     limitations: ["Shorter duration", "Learning curve"],
-    useCase: "Professional video production and editing"
+    useCase: "Professional video production and editing",
+    co2Emissions: {
+      perRequest: "195g CO₂e",
+      perMinute: "390g CO₂e",
+      rating: "high",
+      comparison: "2.9x average video model"
+    }
   },
   {
     name: "Google Veo 3.1",
@@ -455,7 +695,13 @@ export const VIDEO_MODELS: ModelRecommendation[] = [
     features: ["4K HDR", "Native audio", "SynthID watermark"],
     strengths: ["Highest resolution", "Google integration"],
     limitations: ["Limited access"],
-    useCase: "YouTube content and enterprise video"
+    useCase: "YouTube content and enterprise video",
+    co2Emissions: {
+      perRequest: "325g CO₂e",
+      perMinute: "650g CO₂e",
+      rating: "very-high",
+      comparison: "4.8x average video model"
+    }
   },
   {
     name: "Pika 2.5",
@@ -469,7 +715,13 @@ export const VIDEO_MODELS: ModelRecommendation[] = [
     features: ["Pikaffects", "Fast generation", "Easy interface"],
     strengths: ["Speed", "Effects", "Beginner-friendly"],
     limitations: ["720p default", "Less photorealistic"],
-    useCase: "Social media content and rapid iteration"
+    useCase: "Social media content and rapid iteration",
+    co2Emissions: {
+      perRequest: "45g CO₂e",
+      perMinute: "90g CO₂e",
+      rating: "low",
+      comparison: "0.65x average video model"
+    }
   },
   {
     name: "Kling AI 2.6",
@@ -483,7 +735,13 @@ export const VIDEO_MODELS: ModelRecommendation[] = [
     features: ["Up to 2 min", "1080p", "Native audio", "Free tier"],
     strengths: ["Longest videos", "Audio sync", "Affordable"],
     limitations: ["Chinese company", "Less polished"],
-    useCase: "Long-form content and budget projects"
+    useCase: "Long-form content and budget projects",
+    co2Emissions: {
+      perRequest: "165g CO₂e",
+      perMinute: "140g CO₂e",
+      rating: "medium",
+      comparison: "1.0x average video model"
+    }
   },
   {
     name: "Luma Ray3",
@@ -497,7 +755,13 @@ export const VIDEO_MODELS: ModelRecommendation[] = [
     features: ["4K HDR", "Physics engine", "Natural motion"],
     strengths: ["Realistic physics", "Quality", "Affordable"],
     limitations: ["Shorter clips"],
-    useCase: "Realistic animations and product demos"
+    useCase: "Realistic animations and product demos",
+    co2Emissions: {
+      perRequest: "125g CO₂e",
+      perMinute: "250g CO₂e",
+      rating: "medium",
+      comparison: "1.8x average video model"
+    }
   },
   {
     name: "Hailuo AI 2.3",
@@ -511,7 +775,13 @@ export const VIDEO_MODELS: ModelRecommendation[] = [
     features: ["25-30 fps", "1080p", "Free tier"],
     strengths: ["Affordable", "Decent quality"],
     limitations: ["Less known", "Variable results"],
-    useCase: "Budget projects and Asian market content"
+    useCase: "Budget projects and Asian market content",
+    co2Emissions: {
+      perRequest: "85g CO₂e",
+      perMinute: "170g CO₂e",
+      rating: "low-medium",
+      comparison: "1.2x average video model"
+    }
   },
   {
     name: "Adobe Firefly Video",
@@ -525,7 +795,13 @@ export const VIDEO_MODELS: ModelRecommendation[] = [
     features: ["4K", "Adobe integration", "Multiple model access"],
     strengths: ["Workflow integration", "Multiple models"],
     limitations: ["Requires Adobe subscription"],
-    useCase: "Professional Adobe-based video workflows"
+    useCase: "Professional Adobe-based video workflows",
+    co2Emissions: {
+      perRequest: "155g CO₂e",
+      perMinute: "310g CO₂e",
+      rating: "medium-high",
+      comparison: "2.3x average video model"
+    }
   },
   {
     name: "Stable Video Diffusion",
@@ -539,7 +815,13 @@ export const VIDEO_MODELS: ModelRecommendation[] = [
     features: ["Open weights", "Customizable", "Research"],
     strengths: ["Free", "Customizable", "Privacy"],
     limitations: ["Technical setup", "Variable quality"],
-    useCase: "Research and custom video pipelines"
+    useCase: "Research and custom video pipelines",
+    co2Emissions: {
+      perRequest: "Variable",
+      perMinute: "60-280g CO₂e",
+      rating: "low-medium",
+      comparison: "Depends on hardware (0.4-2.1x based on GPU efficiency)"
+    }
   },
   {
     name: "Wan 2.2",
@@ -553,7 +835,13 @@ export const VIDEO_MODELS: ModelRecommendation[] = [
     features: ["16 fps default", "Customizable", "RIFE support"],
     strengths: ["Free", "Open", "Flexible"],
     limitations: ["Lower fps", "Technical"],
-    useCase: "Custom video generation pipelines"
+    useCase: "Custom video generation pipelines",
+    co2Emissions: {
+      perRequest: "Variable",
+      perMinute: "50-240g CO₂e",
+      rating: "low-medium",
+      comparison: "Depends on infrastructure (0.35-1.8x)"
+    }
   }
 ];
 
@@ -572,7 +860,13 @@ export const AUDIO_MODELS: ModelRecommendation[] = [
     features: ["32 languages", "Voice cloning", "Emotion control"],
     strengths: ["Best quality", "Emotional range", "Natural voices"],
     limitations: ["Cost at scale"],
-    useCase: "Professional voiceovers and audiobooks"
+    useCase: "Professional voiceovers and audiobooks",
+    co2Emissions: {
+      perRequest: "3.2g CO₂e",
+      perMinute: "19.2g CO₂e",
+      rating: "medium",
+      comparison: "1.3x average audio model"
+    }
   },
   {
     name: "ElevenLabs Flash v2.5",
@@ -586,7 +880,13 @@ export const AUDIO_MODELS: ModelRecommendation[] = [
     features: ["75ms latency", "Real-time", "AI agents"],
     strengths: ["Ultra-fast", "Natural", "Reliable"],
     limitations: ["Slightly less expressive"],
-    useCase: "AI voice agents and real-time applications"
+    useCase: "AI voice agents and real-time applications",
+    co2Emissions: {
+      perRequest: "0.9g CO₂e",
+      perMinute: "5.4g CO₂e",
+      rating: "low",
+      comparison: "0.35x average audio model"
+    }
   },
   {
     name: "PlayHT 3.0",
@@ -600,7 +900,13 @@ export const AUDIO_MODELS: ModelRecommendation[] = [
     features: ["800+ voices", "130+ languages", "SSML control"],
     strengths: ["Most voices", "Language support", "Breathing effects"],
     limitations: ["Interface complexity"],
-    useCase: "Multilingual content and voice variety"
+    useCase: "Multilingual content and voice variety",
+    co2Emissions: {
+      perRequest: "2.8g CO₂e",
+      perMinute: "16.8g CO₂e",
+      rating: "medium",
+      comparison: "1.1x average audio model"
+    }
   },
   {
     name: "Deepgram Aura",
@@ -614,7 +920,13 @@ export const AUDIO_MODELS: ModelRecommendation[] = [
     features: ["<200ms latency", "Real-time", "API-first"],
     strengths: ["Fastest available", "Low latency", "Scalable"],
     limitations: ["Less emotional range"],
-    useCase: "IVR systems and conversational AI"
+    useCase: "IVR systems and conversational AI",
+    co2Emissions: {
+      perRequest: "0.6g CO₂e",
+      perMinute: "3.6g CO₂e",
+      rating: "very-low",
+      comparison: "0.24x average audio model"
+    }
   },
   {
     name: "OpenAI TTS",
@@ -628,7 +940,13 @@ export const AUDIO_MODELS: ModelRecommendation[] = [
     features: ["6 voices", "HD quality", "API access"],
     strengths: ["Easy integration", "Quality", "Reliable"],
     limitations: ["Limited voices"],
-    useCase: "OpenAI-integrated applications"
+    useCase: "OpenAI-integrated applications",
+    co2Emissions: {
+      perRequest: "2.1g CO₂e",
+      perMinute: "12.6g CO₂e",
+      rating: "low-medium",
+      comparison: "0.85x average audio model"
+    }
   },
   {
     name: "Lovo AI",
@@ -642,7 +960,13 @@ export const AUDIO_MODELS: ModelRecommendation[] = [
     features: ["500+ voices", "100 languages", "Emotion control"],
     strengths: ["Emotional range", "Video focus"],
     limitations: ["Mid-tier quality"],
-    useCase: "YouTube content and video narration"
+    useCase: "YouTube content and video narration",
+    co2Emissions: {
+      perRequest: "2.5g CO₂e",
+      perMinute: "15.0g CO₂e",
+      rating: "medium",
+      comparison: "1.0x average audio model"
+    }
   },
   {
     name: "WellSaid Labs",
@@ -656,7 +980,13 @@ export const AUDIO_MODELS: ModelRecommendation[] = [
     features: ["Fine control", "Tone adjustment", "Team features"],
     strengths: ["Professional quality", "Control", "Reliability"],
     limitations: ["Enterprise-only"],
-    useCase: "Enterprise training and corporate content"
+    useCase: "Enterprise training and corporate content",
+    co2Emissions: {
+      perRequest: "3.5g CO₂e",
+      perMinute: "21.0g CO₂e",
+      rating: "medium-high",
+      comparison: "1.4x average audio model"
+    }
   },
   {
     name: "Hume AI Octave",
@@ -670,7 +1000,13 @@ export const AUDIO_MODELS: ModelRecommendation[] = [
     features: ["Contextual understanding", "5s voice cloning"],
     strengths: ["Most natural", "Context-aware", "Emotional"],
     limitations: ["Newer platform"],
-    useCase: "High-end conversational AI and agents"
+    useCase: "High-end conversational AI and agents",
+    co2Emissions: {
+      perRequest: "4.2g CO₂e",
+      perMinute: "25.2g CO₂e",
+      rating: "high",
+      comparison: "1.7x average audio model"
+    }
   },
   {
     name: "Murf AI",
@@ -684,7 +1020,13 @@ export const AUDIO_MODELS: ModelRecommendation[] = [
     features: ["120+ voices", "20+ languages", "Video sync"],
     strengths: ["User-friendly", "Good variety"],
     limitations: ["Mid-tier quality"],
-    useCase: "Marketing and educational content"
+    useCase: "Marketing and educational content",
+    co2Emissions: {
+      perRequest: "2.2g CO₂e",
+      perMinute: "13.2g CO₂e",
+      rating: "low-medium",
+      comparison: "0.9x average audio model"
+    }
   },
   {
     name: "Listnr",
@@ -698,7 +1040,13 @@ export const AUDIO_MODELS: ModelRecommendation[] = [
     features: ["1000+ voices", "142 languages", "Podcast tools"],
     strengths: ["Most languages", "Podcast features"],
     limitations: ["Variable quality"],
-    useCase: "Global content and podcast creation"
+    useCase: "Global content and podcast creation",
+    co2Emissions: {
+      perRequest: "2.6g CO₂e",
+      perMinute: "15.6g CO₂e",
+      rating: "medium",
+      comparison: "1.05x average audio model"
+    }
   }
 ];
 
@@ -975,14 +1323,6 @@ export const PLATFORMS: Platform[] = [
 
 // ==================== SMART RECOMMENDATION ENGINE ====================
 
-export interface RecommendationCriteria {
-  taskType: string;
-  priority: 'quality' | 'speed' | 'cost' | 'balanced';
-  budget: 'free' | 'low' | 'medium' | 'high';
-  expertise: 'beginner' | 'intermediate' | 'expert';
-  useCase: 'personal' | 'professional' | 'enterprise';
-}
-
 export function getSmartRecommendations(criteria: RecommendationCriteria) {
   const task = TASK_CATEGORIES.find(t => 
     t.tasks.some(task => 
@@ -1013,6 +1353,14 @@ export function getSmartRecommendations(criteria: RecommendationCriteria) {
     } else if (criteria.priority === 'speed') {
       recommendations.primary.push(...llmModels.filter(m => m.tier === 'efficient'));
       recommendations.reasoning.push("Prioritizing fast response models");
+    } else if (criteria.priority === 'eco-friendly') {
+      recommendations.primary.push(...llmModels.filter(m => 
+        m.co2Emissions?.rating === 'very-low' || m.co2Emissions?.rating === 'low'
+      ).sort((a, b) => {
+        const ratingOrder: Record<string, number> = { 'very-low': 1, 'low': 2, 'low-medium': 3, 'medium': 4 };
+        return (ratingOrder[a.co2Emissions?.rating || ''] || 99) - (ratingOrder[b.co2Emissions?.rating || ''] || 99);
+      }));
+      recommendations.reasoning.push("Prioritizing environmentally friendly models with lowest CO₂ emissions");
     } else {
       recommendations.primary.push(...llmModels.slice(0, 2));
     }
@@ -1028,6 +1376,10 @@ export function getSmartRecommendations(criteria: RecommendationCriteria) {
       recommendations.primary.push(...imageModels.filter(m => 
         m.tier === 'open-source' || m.pricing.includes('Free')
       ));
+    } else if (criteria.priority === 'eco-friendly') {
+      recommendations.primary.push(...imageModels.filter(m => 
+        m.co2Emissions?.rating === 'low' || m.co2Emissions?.rating === 'very-low'
+      ));
     } else {
       recommendations.primary.push(...imageModels.slice(0, 2));
     }
@@ -1038,7 +1390,14 @@ export function getSmartRecommendations(criteria: RecommendationCriteria) {
     const videoModels = VIDEO_MODELS.filter(m => 
       task.recommendedModels.video?.includes(m.name)
     );
-    recommendations.primary.push(...videoModels.slice(0, 2));
+    
+    if (criteria.priority === 'eco-friendly') {
+      recommendations.primary.push(...videoModels.filter(m => 
+        m.co2Emissions?.rating === 'low' || m.co2Emissions?.rating === 'low-medium'
+      ));
+    } else {
+      recommendations.primary.push(...videoModels.slice(0, 2));
+    }
   }
 
   // Audio Recommendations
@@ -1046,8 +1405,145 @@ export function getSmartRecommendations(criteria: RecommendationCriteria) {
     const audioModels = AUDIO_MODELS.filter(m => 
       task.recommendedModels.audio?.includes(m.name)
     );
-    recommendations.primary.push(...audioModels.slice(0, 2));
+    
+    if (criteria.priority === 'eco-friendly') {
+      recommendations.primary.push(...audioModels.filter(m => 
+        m.co2Emissions?.rating === 'very-low' || m.co2Emissions?.rating === 'low'
+      ));
+    } else {
+      recommendations.primary.push(...audioModels.slice(0, 2));
+    }
   }
 
   return recommendations;
+}
+
+// ==================== CO2 RATING HELPERS ====================
+
+export const CO2_RATING_INFO: Record<string, {
+  color: string;
+  icon: string;
+  label: string;
+  description: string;
+}> = {
+  'very-low': {
+    color: '#22c55e',
+    icon: '🌱',
+    label: 'Very Low Impact',
+    description: 'Minimal environmental impact'
+  },
+  'low': {
+    color: '#84cc16',
+    icon: '🍃',
+    label: 'Low Impact',
+    description: 'Below average emissions'
+  },
+  'low-medium': {
+    color: '#eab308',
+    icon: '⚠️',
+    label: 'Low-Medium Impact',
+    description: 'Slightly below average emissions'
+  },
+  'medium': {
+    color: '#f59e0b',
+    icon: '🔶',
+    label: 'Medium Impact',
+    description: 'Average emissions'
+  },
+  'medium-high': {
+    color: '#f97316',
+    icon: '🔸',
+    label: 'Medium-High Impact',
+    description: 'Above average emissions'
+  },
+  'high': {
+    color: '#ef4444',
+    icon: '⚡',
+    label: 'High Impact',
+    description: 'High emissions'
+  },
+  'very-high': {
+    color: '#dc2626',
+    icon: '🔥',
+    label: 'Very High Impact',
+    description: 'Very high emissions'
+  }
+};
+
+export function getCO2RatingColor(rating: string): string {
+  return CO2_RATING_INFO[rating]?.color || '#6b7280';
+}
+
+export function getCO2RatingIcon(rating: string): string {
+  return CO2_RATING_INFO[rating]?.icon || '📊';
+}
+
+export function getCO2RatingLabel(rating: string): string {
+  return CO2_RATING_INFO[rating]?.label || 'Unknown';
+}
+
+export function getCO2RatingDescription(rating: string): string {
+  return CO2_RATING_INFO[rating]?.description || 'No information available';
+}
+
+// ==================== UTILITY FUNCTIONS ====================
+
+export function getModelsByPlatform(platform: string): ModelRecommendation[] {
+  return [
+    ...LLM_MODELS,
+    ...IMAGE_MODELS,
+    ...VIDEO_MODELS,
+    ...AUDIO_MODELS
+  ].filter(model => model.platform === platform);
+}
+
+export function getModelsByTier(tier: string): ModelRecommendation[] {
+  return [
+    ...LLM_MODELS,
+    ...IMAGE_MODELS,
+    ...VIDEO_MODELS,
+    ...AUDIO_MODELS
+  ].filter(model => model.tier === tier);
+}
+
+export function getEcoFriendlyModels(maxRating: 'very-low' | 'low' | 'low-medium' | 'medium' = 'low'): ModelRecommendation[] {
+  const ratingOrder: Record<string, number> = {
+    'very-low': 1,
+    'low': 2,
+    'low-medium': 3,
+    'medium': 4,
+    'medium-high': 5,
+    'high': 6,
+    'very-high': 7
+  };
+  
+  const maxValue = ratingOrder[maxRating];
+  
+  return [
+    ...LLM_MODELS,
+    ...IMAGE_MODELS,
+    ...VIDEO_MODELS,
+    ...AUDIO_MODELS
+  ].filter(model => {
+    if (!model.co2Emissions) return false;
+    const modelRating = ratingOrder[model.co2Emissions.rating];
+    return modelRating <= maxValue;
+  });
+}
+
+export function compareModelEmissions(model1: ModelRecommendation, model2: ModelRecommendation): number {
+  const ratingOrder: Record<string, number> = {
+    'very-low': 1,
+    'low': 2,
+    'low-medium': 3,
+    'medium': 4,
+    'medium-high': 5,
+    'high': 6,
+    'very-high': 7
+  };
+  
+  const rating1 = ratingOrder[model1.co2Emissions?.rating || 'medium'];
+  const rating2 = ratingOrder[model2.co2Emissions?.rating || 'medium'];
+  
+  return rating1 - rating2;
 }
